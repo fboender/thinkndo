@@ -124,9 +124,14 @@ class GUI:
             parent.appendRow(row_items)
             cur_item = parent.child(parent.rowCount() - 1)
         else:
-            # Append below specified row
-            parent.insertRow(row + 1, row_items)
-            cur_item = parent.child(row + 1)
+            if below is True:
+                # Append below specified row
+                parent.insertRow(row + 1, row_items)
+                cur_item = parent.child(row + 1)
+            else:
+                # Append above specified row
+                parent.insertRow(row, row_items)
+                cur_item = parent.child(row)
 
         cur_index = self.todo_model.indexFromItem(cur_item)
         if expanded is True:
@@ -222,24 +227,30 @@ class GUI:
 
     def _ev_insert_above(self):
         cur_index = self.todo_view.currentIndex()
+        cur_item = self.todo_model.itemFromIndex(cur_index)
+        cur_row = cur_index.row()
         prev_index = cur_index.siblingAtRow(cur_index.row() - 1)
         prev_item = self.todo_model.itemFromIndex(prev_index)
-        prev_icon = None
-        prev_parent = None
+        parent_item = cur_item.parent()
+        if parent_item is None:
+            parent_item = self.todo_root
 
+        # Use icon of item above or below where we'll insert
+        icon = self.default_icon
         if prev_item is not None:
             prev_data = prev_item.data()
-            prev_icon = prev_data["icon"]
-            prev_parent = prev_item.parent()
+            icon = prev_data["icon"]
+        else:
+            cur_data = cur_item.data()
+            icon = cur_data["icon"]
 
-        if prev_parent is None:
-            prev_parent = self.todo_root
-
-        new_item = self.insert_todo(prev_parent,
+        # Insert new todo and edit
+        new_item = self.insert_todo(parent_item,
                                     "",
-                                    row=cur_index.row()-1,
-                                    icon=prev_icon,
-                                    checked=False)
+                                    row=cur_row,
+                                    icon=icon,
+                                    checked=False,
+                                    below=False)
         new_index = self.todo_model.indexFromItem(new_item)
         self.todo_view.setCurrentIndex(new_index)
         self.todo_view.edit(new_index)
@@ -247,22 +258,24 @@ class GUI:
     def _ev_insert_below(self):
         cur_index = self.todo_view.currentIndex()
         cur_item = self.todo_model.itemFromIndex(cur_index)
-        cur_icon = None
-        cur_parent = None
+        cur_row = cur_index.row()
+        prev_index = cur_index.siblingAtRow(cur_index.row() - 1)
+        prev_item = self.todo_model.itemFromIndex(prev_index)
+        parent_item = cur_item.parent()
+        if parent_item is None:
+            parent_item = self.todo_root
 
-        if cur_item is not None:
-            cur_data = cur_item.data()
-            cur_icon = cur_data["icon"]
-            cur_parent = cur_item.parent()
+        # Use icon of current item
+        cur_data = cur_item.data()
+        icon = cur_data["icon"]
 
-        if cur_parent is None:
-            cur_parent = self.todo_root
-
-        new_item = self.insert_todo(cur_parent,
+        # Insert new todo and edit
+        new_item = self.insert_todo(parent_item,
                                     "",
-                                    row=cur_index.row(),
-                                    icon=cur_icon,
-                                    checked=False)
+                                    row=cur_row,
+                                    icon=icon,
+                                    checked=False,
+                                    below=True)
         new_index = self.todo_model.indexFromItem(new_item)
         self.todo_view.setCurrentIndex(new_index)
         self.todo_view.edit(new_index)
