@@ -30,10 +30,18 @@ keypress_items = [
 quick_icon_map = {
     "i ": "information.png",
     "! ": "warning.png",
-    "!! ": "exclamation.png",
+    "+ ": "plus.png",
+    "/ ": "folder.png",
     "? ": "question.png",
     "B ": "bug.png",
+    "> ": "arrow_right.png",
+    "* ": "bullet_black.png",
+    ": ": "clock.png",
+    "!! ": "exclamation.png",
     "[] ": "check_box_uncheck.png",
+    "db ": "database.png",
+    "doc ": "document_editing.png",
+    "usr ": "user.png",
 }
 
 
