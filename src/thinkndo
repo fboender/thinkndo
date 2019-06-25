@@ -65,7 +65,7 @@ class GUI:
         self.todo_model = QStandardItemModel(0, 1)
         self.todo_model.setHorizontalHeaderLabels(
             [
-                "Todo",
+                "",
             ]
         )
         self.toc_root = self.todo_model.invisibleRootItem()
