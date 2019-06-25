@@ -17,6 +17,7 @@ keypress_items = [
     {"key": Qt.Key_J, "event": "cursor_down"},
     {"key": Qt.Key_K, "event": "cursor_up"},
     {"key": Qt.Key_L, "event": "cursor_right"},
+    {"key": Qt.Key_O, "event": "insert_above", "modifiers": Qt.ShiftModifier},
     {"key": Qt.Key_O, "event": "insert_below"},
     {"key": Qt.Key_Q, "event": "close"},
     {"key": Qt.Key_S, "event": "save"},
@@ -73,8 +74,8 @@ class GUI:
         self.win.setCentralWidget(self.todo_view)
         self.win.show()
 
-    def insert_todo(self, parent, title, below_row=None, icon=None,
-                    checked=False, expanded=False):
+    def insert_todo(self, parent, title, row=None, icon=None,
+                    checked=False, expanded=False, below=True):
         """
         `parent` is a QStandardItem. Returns the new QStandardItem.
         """
@@ -103,14 +104,14 @@ class GUI:
             item
         ]
 
-        if below_row is None:
+        if row is None:
             # Append at end of current level
             parent.appendRow(row_items)
             cur_item = parent.child(parent.rowCount() - 1)
         else:
             # Append below specified row
-            parent.insertRow(below_row + 1, row_items)
-            cur_item = parent.child(below_row + 1)
+            parent.insertRow(row + 1, row_items)
+            cur_item = parent.child(row + 1)
 
         cur_index = self.todo_model.indexFromItem(cur_item)
         if expanded is True:
@@ -203,6 +204,29 @@ class GUI:
             cur_item.setData(cur_item_data)
 
         self.save()
+
+    def _ev_insert_above(self):
+        cur_index = self.todo_view.currentIndex()
+        prev_index = cur_index.siblingAtRow(cur_index.row() - 1)
+        prev_item = self.todo_model.itemFromIndex(prev_index)
+        prev_icon = None
+        prev_parent = None
+
+        if prev_item is not None:
+            prev_data = prev_item.data()
+            prev_icon = prev_data["icon"]
+            prev_parent = prev_item.parent()
+
+        if prev_parent is None:
+            prev_parent = self.todo_root
+
+        new_item = self.insert_todo(prev_parent,
+                                    "",
+                                    row=cur_index.row()-1,
+                                    icon=prev_icon)
+        new_index = self.todo_model.indexFromItem(new_item)
+        self.todo_view.setCurrentIndex(new_index)
+        self.todo_view.edit(new_index)
 
     def _ev_insert_below(self):
         cur_index = self.todo_view.currentIndex()
