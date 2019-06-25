@@ -41,7 +41,8 @@ class GUI:
     """
     Main GUI class.
     """
-    def __init__(self):
+    def __init__(self, default_icon="check_box_uncheck.png"):
+        self.default_icon = default_icon
         self.settings = QSettings("electricmonk", app_name)
 
         # Main window
@@ -80,12 +81,13 @@ class GUI:
         """
         `parent` is a QStandardItem. Returns the new QStandardItem.
         """
-        display_icon = "check_box_uncheck.png"
         logging.info("Inserting row. parent={}, title={}, row={}, "
                      "icon={}, checked={}, expanded={}, below={}".format(
                         parent, title, row, icon, checked, expanded, below))
+        display_icon = self.default_icon
 
         if icon is None:
+            icon = self.default_icon
             icon = "check_box_uncheck.png"
         else:
             display_icon = icon
