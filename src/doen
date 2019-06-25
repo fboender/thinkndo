@@ -81,6 +81,9 @@ class GUI:
         `parent` is a QStandardItem. Returns the new QStandardItem.
         """
         display_icon = "check_box_uncheck.png"
+        logging.info("Inserting row. parent={}, title={}, row={}, "
+                     "icon={}, checked={}, expanded={}, below={}".format(
+                        parent, title, row, icon, checked, expanded, below))
 
         if icon is None:
             icon = "check_box_uncheck.png"
