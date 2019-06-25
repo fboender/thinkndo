@@ -1,0 +1,342 @@
+#!/usr/bin/env python3
+
+import argparse
+import shutil
+import signal
+import json
+from PyQt5.Qt import *
+from PyQt5 import QtCore
+
+app_name = "doen"
+
+keypress_items = [
+    {"key": Qt.Key_A, "event": "edit_end"},
+    {"key": Qt.Key_C, "event": "collapse"},
+    {"key": Qt.Key_D, "event": "delete"},
+    {"key": Qt.Key_H, "event": "cursor_left"},
+    {"key": Qt.Key_J, "event": "cursor_down"},
+    {"key": Qt.Key_K, "event": "cursor_up"},
+    {"key": Qt.Key_L, "event": "cursor_right"},
+    {"key": Qt.Key_O, "event": "insert_below"},
+    {"key": Qt.Key_Q, "event": "close"},
+    {"key": Qt.Key_S, "event": "save"},
+    {"key": Qt.Key_X, "event": "toggle_done"},
+    {"key": Qt.Key_Z, "event": "dump"},
+    {"key": Qt.Key_Escape, "event": "close"},
+]
+
+quick_icon_map = {
+    "i ": "information.png",
+    "! ": "warning.png",
+    "!! ": "exclamation.png",
+    "? ": "question.png",
+    "B ": "bug.png",
+    "[] ": "check_box_uncheck.png",
+}
+
+
+class GUI:
+    """
+    Main GUI class.
+    """
+    def __init__(self):
+        self.settings = QSettings("electricmonk", app_name)
+
+        # Main window
+        self.win = QMainWindow()
+        geometry = self.settings.value("geometry")
+        if geometry is not None:
+            self.win.restoreGeometry(geometry);
+        self.win.closeEvent = self._ev_close
+
+        # Todo tree
+        self.todo_view = QTreeView(self.win)
+        self.todo_model = QStandardItemModel(0, 1)
+        self.todo_model.setHorizontalHeaderLabels(
+            [
+                "Todo",
+            ]
+        )
+        self.toc_root = self.todo_model.invisibleRootItem()
+        self.todo_view.setModel(self.todo_model)
+        self.todo_root = self.todo_model.invisibleRootItem()
+
+        self.todo_view.expandAll()
+
+        # Signals
+        self.todo_view.keyPressEvent = self._ev_key_press
+        self.todo_view.expanded.connect(self._ev_expanded)
+        self.todo_view.collapsed.connect(self._ev_collapsed)
+        self.todo_model.itemChanged.connect(self._ev_item_changed)
+        self.todo_model.rowsRemoved.connect(self._ev_changed)
+
+        self.win.setCentralWidget(self.todo_view)
+        self.win.show()
+
+    def insert_todo(self, parent, title, below_row=None, icon=None,
+                    checked=False, expanded=False):
+        """
+        `parent` is a QStandardItem. Returns the new QStandardItem.
+        """
+        display_icon = "check_box_uncheck.png"
+
+        if icon is None:
+            icon = "check_box_uncheck.png"
+        else:
+            display_icon = icon
+
+        # Override displayed icon so that checked items are always the checked
+        # icon
+        if checked is True:
+            display_icon = "check_box.png"
+
+        item = QStandardItem(QIcon("icons/" + display_icon), title)
+        item.setData(
+            {
+                "title": title,
+                "checked": checked,
+                "icon": icon,
+                "expanded": expanded
+            }
+        )
+        row_items = [
+            item
+        ]
+
+        if below_row is None:
+            # Append at end of current level
+            parent.appendRow(row_items)
+            cur_item = parent.child(parent.rowCount() - 1)
+        else:
+            # Append below specified row
+            parent.insertRow(below_row + 1, row_items)
+            cur_item = parent.child(below_row + 1)
+
+        cur_index = self.todo_model.indexFromItem(cur_item)
+        if expanded is True:
+            self.todo_view.setExpanded(cur_index, True)
+
+        return cur_item
+
+    def _ev_dump(self):
+        cur_index = self.todo_view.currentIndex()
+        cur_item = self.todo_model.itemFromIndex(cur_index)
+        cur_item_data = cur_item.data()
+
+        print("current item")
+        print("  cur_index", cur_index)
+        print("  cur_item", cur_item)
+        print("  cur_data", cur_item_data)
+
+    def _ev_key_press(self, keypress):
+        """
+        Handle key press events. Looks in `keypress_items` for actions.
+        """
+        for keypress_item in keypress_items:
+            if (
+                keypress.key() == keypress_item["key"] and
+                (
+                    "modifiers" not in keypress_item or
+                    (int(keypress.modifiers()) & keypress_item["modifiers"] == keypress_item["modifiers"])
+                )
+               ):
+                event_cb = getattr(self, "_ev_{}".format(keypress_item["event"]))
+                event_cb()
+
+    def _ev_edit_end(self):
+        cur_index = self.todo_view.currentIndex()
+        self.todo_view.edit(cur_index, QAbstractItemView.AllEditTriggers, None)
+
+    def _ev_item_changed(self, item):
+        text = item.text()
+        data = item.data()
+
+        for key in quick_icon_map.keys():
+            if text.startswith(key):
+                new_text = text[len(key):]
+                item.setText(new_text)
+                data["icon"] = quick_icon_map[key]
+                data["title"] = new_text
+                item.setData(data)
+                item.setIcon(QIcon("icons/" + quick_icon_map[key]))
+            else:
+                data["title"] = text
+                item.setData(data)
+
+        self.save()
+
+    def _ev_changed(self):
+        self.save()
+
+    def _ev_delete(self):
+        cur_index = self.todo_view.currentIndex()
+        cur_parent = cur_index.parent()
+        self.todo_model.removeRows(cur_index.row(), 1, cur_parent)
+
+    def _ev_collapsed(self, cur_index):
+        cur_item = self.todo_model.itemFromIndex(cur_index)
+        cur_item_data = cur_item.data()
+        cur_item_data['expanded'] = False
+        cur_item.setData(cur_item_data)
+        self.save()
+
+    def _ev_expanded(self, cur_index):
+        cur_item = self.todo_model.itemFromIndex(cur_index)
+        cur_item_data = cur_item.data()
+        cur_item_data['expanded'] = True
+        cur_item.setData(cur_item_data)
+        self.save()
+
+    def _ev_collapse(self):
+        cur_index = self.todo_view.currentIndex()
+        cur_item = self.todo_model.itemFromIndex(cur_index)
+        cur_item_data = cur_item.data()
+
+        if self.todo_view.isExpanded(cur_index) is True:
+            self.todo_view.setExpanded(cur_index, False)
+            cur_item_data['expanded'] = False
+            cur_item.setData(cur_item_data)
+        else:
+            self.todo_view.setExpanded(cur_index, True)
+            cur_item_data['expanded'] = True
+            cur_item.setData(cur_item_data)
+
+        self.save()
+
+    def _ev_insert_below(self):
+        cur_index = self.todo_view.currentIndex()
+        cur_item = self.todo_model.itemFromIndex(cur_index)
+        cur_icon = None
+        cur_parent = None
+
+        if cur_item is not None:
+            cur_data = cur_item.data()
+            cur_icon = cur_data["icon"]
+            cur_parent = cur_item.parent()
+
+        if cur_parent is None:
+            cur_parent = self.todo_root
+
+        new_item = self.insert_todo(cur_parent, "", below_row=cur_index.row(), icon=cur_icon)
+        new_index = self.todo_model.indexFromItem(new_item)
+        self.todo_view.setCurrentIndex(new_index)
+        self.todo_view.edit(new_index)
+
+    def _ev_cursor_up(self):
+        cur_index = self.todo_view.currentIndex()
+        # Move to next row in current indent level
+        new_index = cur_index.siblingAtRow(cur_index.row() - 1)
+        if new_index.row() == -1:
+            # Top of current indent. Move to parent
+            new_index = cur_index.parent()
+            if new_index.row() == -1:
+                # Don't do anything
+                new_index = cur_index
+        self.todo_view.setCurrentIndex(new_index)
+
+    def _ev_cursor_down(self):
+        cur_index = self.todo_view.currentIndex()
+        new_index = cur_index.siblingAtRow(cur_index.row() + 1)
+        if new_index.row() != -1:
+            self.todo_view.setCurrentIndex(new_index)
+
+    def _ev_cursor_left(self):
+        cur_index = self.todo_view.currentIndex()
+        cur_item = self.todo_model.itemFromIndex(cur_index)
+        cur_parent = cur_item.parent()
+        new_index = self.todo_model.indexFromItem(cur_parent)
+        if cur_parent is not None:
+            self.todo_view.setCurrentIndex(new_index)
+
+    def _ev_cursor_right(self):
+        cur_index = self.todo_view.currentIndex()
+        cur_item = self.todo_model.itemFromIndex(cur_index)
+        has_children = self.todo_model.hasChildren(cur_index)
+
+        if not has_children:
+            # Add new child
+            new_item = self.insert_todo(cur_item, "")
+            new_index = self.todo_model.indexFromItem(new_item)
+            self.todo_view.setCurrentIndex(new_index)
+            self.todo_view.edit(new_index)
+        else:
+            # Move into subtree
+            new_index = self.todo_view.moveCursor(QAbstractItemView.MoveRight, Qt.NoModifier)
+            self.todo_view.setCurrentIndex(new_index)
+
+    def _ev_toggle_done(self):
+        cur_index = self.todo_view.currentIndex()
+        cur_item = self.todo_model.itemFromIndex(cur_index)
+        cur_item_data = cur_item.data()
+
+        if cur_item_data["checked"] == False:
+            cur_item_data["checked"] = True
+            #cur_item_data["icon"] = "check_box.png"
+            cur_item.setIcon(QIcon("icons/" + "check_box.png"))
+        else:
+            cur_item_data["checked"] = False
+            cur_item.setIcon(QIcon("icons/" + cur_item_data["icon"]))
+
+        cur_item.setData(cur_item_data)
+        self.save()
+
+    def _ev_close(self, event=None):
+        """
+        Catch the user pressing the [X] button and cleanly close the app.
+        """
+        self.close()
+
+    def _ev_save(self):
+        self.save()
+
+    def _walk_todos(self, item):
+        items = []
+        for row in range(0, item.rowCount()):
+            child_item = item.child(row, 0)
+            child_item_data = child_item.data()
+            items.append(child_item_data)
+            if child_item.hasChildren():
+                child_item_data["children"] = self._walk_todos(child_item)
+        return items
+
+    def _generate_todos(self, todos, parent_item):
+        for todo in todos:
+            new_item = self.insert_todo(parent_item,
+                                        todo["title"],
+                                        icon=todo["icon"],
+                                        checked=todo["checked"],
+                                        expanded=todo["expanded"])
+            self._generate_todos(todo.get("children", []), new_item)
+
+    def load(self, path):
+        with open(path, "r") as f:
+            todos = json.load(f)
+
+        self._generate_todos(todos, self.todo_root)
+
+    def save(self):
+        todos = self._walk_todos(self.todo_root)
+        with open("/home/fboender/todos.doen", "w") as f:
+            json.dump(todos, f, indent=2)
+
+    def close(self):
+        self.settings.setValue("geometry", self.win.saveGeometry())
+        self.settings.sync()
+        QCoreApplication.quit()
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(metavar='PATH', dest='path', type=str)
+    args = parser.parse_args()
+
+    # Make sure ctrl-c on the commandline stops the application
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    # Backup file
+    shutil.copy2(args.path, "{}.bak".format(args.path))
+
+    # GUI
+    app = QApplication([])
+    gui = GUI()
+    gui.load(args.path)
+    app.exec_()
