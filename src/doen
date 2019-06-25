@@ -242,7 +242,10 @@ class GUI:
         if cur_parent is None:
             cur_parent = self.todo_root
 
-        new_item = self.insert_todo(cur_parent, "", below_row=cur_index.row(), icon=cur_icon)
+        new_item = self.insert_todo(cur_parent,
+                                    "",
+                                    row=cur_index.row(),
+                                    icon=cur_icon)
         new_index = self.todo_model.indexFromItem(new_item)
         self.todo_view.setCurrentIndex(new_index)
         self.todo_view.edit(new_index)
