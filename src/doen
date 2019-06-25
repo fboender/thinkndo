@@ -142,6 +142,7 @@ class GUI:
                ):
                 event_cb = getattr(self, "_ev_{}".format(keypress_item["event"]))
                 event_cb()
+                return
 
     def _ev_edit_end(self):
         cur_index = self.todo_view.currentIndex()
