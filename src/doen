@@ -4,6 +4,7 @@ import argparse
 import shutil
 import signal
 import json
+import logging
 from PyQt5.Qt import *
 from PyQt5 import QtCore
 
@@ -354,11 +355,21 @@ class GUI:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument(metavar='PATH', dest='path', type=str)
+    parser.add_argument("--debug",
+                        dest='debug',
+                        action="store_true")
+    parser.add_argument(metavar='PATH',
+                        dest='path',
+                        type=str)
     args = parser.parse_args()
 
     # Make sure ctrl-c on the commandline stops the application
     signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    if args.debug is True:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.WARN)
 
     # Backup file
     shutil.copy2(args.path, "{}.bak".format(args.path))
