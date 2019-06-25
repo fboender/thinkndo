@@ -88,6 +88,7 @@ class GUI:
 
         if icon is None:
             icon = self.default_icon
+        elif icon == "check_box.png" and checked == False:
             icon = "check_box_uncheck.png"
         else:
             display_icon = icon
@@ -229,7 +230,8 @@ class GUI:
         new_item = self.insert_todo(prev_parent,
                                     "",
                                     row=cur_index.row()-1,
-                                    icon=prev_icon)
+                                    icon=prev_icon,
+                                    checked=False)
         new_index = self.todo_model.indexFromItem(new_item)
         self.todo_view.setCurrentIndex(new_index)
         self.todo_view.edit(new_index)
@@ -251,7 +253,8 @@ class GUI:
         new_item = self.insert_todo(cur_parent,
                                     "",
                                     row=cur_index.row(),
-                                    icon=cur_icon)
+                                    icon=cur_icon,
+                                    checked=False)
         new_index = self.todo_model.indexFromItem(new_item)
         self.todo_view.setCurrentIndex(new_index)
         self.todo_view.edit(new_index)
