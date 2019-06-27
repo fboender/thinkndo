@@ -1,4 +1,4 @@
-Thind'n'do
+Think'n'do
 ==========
 
 A hierarchical outliner and todo manager.
