@@ -3,7 +3,7 @@ Thind'n'do
 
 A hierarchical outliner and todo manager.
 
-![](https://raw.githubusercontent.com/fboender/thinkndo/master/screenshot.png
+![](https://raw.githubusercontent.com/fboender/thinkndo/master/screenshot.png)
 
 ## Keybindings
 
