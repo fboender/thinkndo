@@ -26,6 +26,8 @@ keypress_items = [
     {"key": Qt.Key_L, "event": "cursor_right"},
     {"key": Qt.Key_O, "event": "insert_above", "modifiers": Qt.ShiftModifier},
     {"key": Qt.Key_O, "event": "insert_below"},
+    {"key": Qt.Key_P, "event": "paste_above", "modifiers": Qt.ShiftModifier},
+    {"key": Qt.Key_P, "event": "paste_below"},
     {"key": Qt.Key_Q, "event": "close"},
     {"key": Qt.Key_S, "event": "save"},
     {"key": Qt.Key_X, "event": "toggle_done"},
@@ -129,6 +131,7 @@ class GUI:
     def __init__(self, path):
         self.path = path
         self.settings = QSettings("electricmonk", app_name)
+        self.del_buf = None
 
         # Main window
         self.win = QMainWindow()
@@ -251,9 +254,36 @@ class GUI:
 
     def _ev_delete(self):
         cur = self.get()
+        children = self._serialize(cur["item"])
+        self.del_buf = cur["node"].to_dict()
+        self.del_buf["children"] = children
         self.node_model.removeRows(cur["index"].row(), 1, cur["index"].parent())
 
         self.save(self.path)
+
+    def _ev_paste_above(self):
+        if self.del_buf is None:
+            return
+
+        cur = self.get()
+        cur_row = cur["item"].row()
+        cur_item_parent = cur["item"].parent()
+
+        node = Node.from_dict(self.del_buf)
+        new_item = self.insert_node(node, cur_item_parent, cur_row)
+        self._deserialize(self.del_buf["children"], new_item)
+
+    def _ev_paste_below(self):
+        if self.del_buf is None:
+            return
+
+        cur = self.get()
+        cur_row = cur["item"].row()
+        cur_item_parent = cur["item"].parent()
+
+        node = Node.from_dict(self.del_buf)
+        new_item = self.insert_node(node, cur_item_parent, cur_row + 1)
+        self._deserialize(self.del_buf["children"], new_item)
 
     def _ev_expanded(self, index):
         cur = self.get(index)
