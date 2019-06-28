@@ -475,7 +475,7 @@ class GUI:
         raw_nodes = self._serialize(self.node_root)
 
         with open(path, "w") as f:
-            json.dump(raw_nodes, f)
+            json.dump(raw_nodes, f, indent=2)
 
     def close(self):
         self.save(self.path)
