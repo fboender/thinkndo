@@ -153,6 +153,7 @@ class GUI:
         self.load(self.path)
 
         # Signals
+        self.orig_node_view_keyPressEvent = self.node_view.keyPressEvent
         self.node_view.keyPressEvent = self._ev_key_press
         self.node_view.expanded.connect(self._ev_expanded)
         self.node_view.collapsed.connect(self._ev_collapsed)
@@ -229,6 +230,7 @@ class GUI:
                 event_cb = getattr(self, "_ev_{}".format(keypress_item["event"]))
                 event_cb()
                 return
+        self.orig_node_view_keyPressEvent(keypress)
 
     def _ev_item_changed(self, item):
         logging.info("ev_item_changed: {}".format(item))
