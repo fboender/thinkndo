@@ -415,6 +415,7 @@ class GUI:
             self.node_view.edit(new_index)
         else:
             # Move into subtree
+            self.node_view.setExpanded(cur["index"], True)
             new_index = self.node_view.moveCursor(QAbstractItemView.MoveRight,
                                                   Qt.NoModifier)
             self.node_view.setCurrentIndex(new_index)
