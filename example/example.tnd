@@ -111,6 +111,14 @@
             "children": []
           },
           {
+            "title": "Trees can be automatically collapsed when you move out of them using. Toggle this with \"C\".",
+            "icon": "bullet_black.png",
+            "checked": false,
+            "expanded": true,
+            "auto_collapse": false,
+            "children": []
+          },
+          {
             "title": "For more keys, see the README.md",
             "icon": "bullet_black.png",
             "checked": false,
@@ -313,11 +321,11 @@
         "icon": "folder.png",
         "checked": false,
         "expanded": false,
-        "auto_collapse": false,
+        "auto_collapse": true,
         "children": [
           {
             "title": "Buy bread",
-            "icon": "folder.png",
+            "icon": "check_box_uncheck.png",
             "checked": false,
             "expanded": true,
             "auto_collapse": false,
