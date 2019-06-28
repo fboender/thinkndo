@@ -61,7 +61,6 @@ class Node:
         self.icon = icon
         self.checked = checked
         self.expanded = expanded
-        #self.children = []
 
     @staticmethod
     def from_dict(d):
