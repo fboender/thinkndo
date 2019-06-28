@@ -394,6 +394,8 @@ class GUI:
     def _ev_cursor_left(self):
         cur = self.get()
         new_index = self.node_model.indexFromItem(cur["parent_item"])
+
+        # Focus
         if cur["item"].parent() is not None:
             self.node_view.setCurrentIndex(new_index)
 
