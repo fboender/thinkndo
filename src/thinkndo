@@ -16,6 +16,7 @@ app_name = "doen"
 
 keypress_items = [
     {"key": Qt.Key_A, "event": "edit"},
+    {"key": Qt.Key_C, "event": "toggle_auto_collapse", "modifiers": Qt.ShiftModifier},
     {"key": Qt.Key_C, "event": "toggle_expanded"},
     {"key": Qt.Key_D, "event": "delete"},
     {"key": Qt.Key_H, "event": "cursor_left"},
@@ -56,11 +57,13 @@ class Node:
     """
     Nodes represent a single leaf in the outline tree.
     """
-    def __init__(self, title, icon=None, checked=False, expanded=False):
+    def __init__(self, title, icon=None, checked=False, expanded=False,
+                 auto_collapse=False):
         self.title = title
         self.icon = icon
         self.checked = checked
         self.expanded = expanded
+        self.auto_collapse = auto_collapse
 
     @staticmethod
     def from_dict(d):
@@ -71,8 +74,9 @@ class Node:
         node = Node(
             d["title"],
             d["icon"],
-            d["checked"],
-            d["expanded"]
+            d.get("checked", False),
+            d.get("expanded", True),
+            d.get("auto_collapse", False),
         )
 
         return node
@@ -104,6 +108,7 @@ class Node:
             "icon": self.icon,
             "checked": self.checked,
             "expanded": self.expanded,
+            "auto_collapse": self.auto_collapse,
         }
 
         return s
@@ -118,8 +123,8 @@ class Node:
         return item
 
     def __repr__(self):
-        return "<Node title='{}', icon={}, checked={}, expanded={} nr_of_children={}>".format(
-            self.title, self.icon, self.checked, self.expanded, ''
+        return "<Node title='{}', icon={}, checked={}, expanded={} auto_collapse={}>".format(
+            self.title, self.icon, self.checked, self.expanded, self.auto_collapse
         )
 
 
@@ -157,6 +162,7 @@ class GUI:
         self.node_view.keyPressEvent = self._ev_key_press
         self.node_view.expanded.connect(self._ev_expanded)
         self.node_view.collapsed.connect(self._ev_collapsed)
+        self.node_view.selectionModel().currentChanged.connect(self._ev_current_changed)
         self.node_model.itemChanged.connect(self._ev_item_changed)
         self.node_model.rowsRemoved.connect(self._ev_changed)
 
@@ -180,7 +186,7 @@ class GUI:
             parent.insertRow(row, row_items)
 
         index = self.node_model.indexFromItem(item)
-        if node.expanded is True:
+        if node.expanded is True and node.auto_collapse is False:
             self.node_view.setExpanded(index, True)
 
         return item
@@ -193,6 +199,8 @@ class GUI:
         if index is None:
             index = self.node_view.currentIndex()
         item = self.node_model.itemFromIndex(index)
+        if item is None:
+            return None
         node = item.data()
         row = index.row()
         parent_item = item.parent()
@@ -231,6 +239,35 @@ class GUI:
                 event_cb()
                 return
         self.orig_node_view_keyPressEvent(keypress)
+
+    def _ev_current_changed(self, new_index, prev_index):
+        """
+        Auto-collapse trees if user moves away from them.
+        """
+        new = self.get(new_index)
+        prev = self.get(prev_index)
+
+        assert new_index is not None
+        if prev is None:
+            return
+
+        # Build a list of items that shouldn't be collapsed, because they're
+        # parents of the new item we're switching to.
+        no_collapse = []
+        i = new
+        while i is not None:
+            if i is prev["item"]:
+                return
+            i = self.get(i["index"].parent())
+            no_collapse.append(i)
+
+        # Collapse previous item and all its parents, except if they're a
+        # parent of the new item
+        item = prev
+        while item is not None:
+            if item not in no_collapse and item["node"].auto_collapse is True:
+                self.node_view.setExpanded(item["index"], False)
+            item = self.get(item["index"].parent())
 
     def _ev_item_changed(self, item):
         logging.info("ev_item_changed: {}".format(item))
@@ -297,6 +334,12 @@ class GUI:
         item = self.get(index)
         item["node"].expanded = False
         self.save(self.path)
+
+    def _ev_toggle_auto_collapse(self):
+        cur = self.get()
+        cur["node"].auto_collapse = not cur["node"].auto_collapse
+        if cur["node"].auto_collapse is True:
+            self.node_view.setExpanded(cur["index"], False)
 
     def _ev_toggle_expanded(self):
         cur = self.get()
