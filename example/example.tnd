@@ -291,6 +291,15 @@
               "children": []
             },
             {
+              "uniq_id": "3a08964b6e7e4bb6bbf95df30ed0aa3e",
+              "title": "\"^ Note\"",
+              "icon": "note.png",
+              "checked": false,
+              "expanded": true,
+              "auto_collapse": false,
+              "children": []
+            },
+            {
               "uniq_id": "a19f1c1b5c45436389a6179567a9ba0b",
               "title": "\"!! REALLY careful with this one\"",
               "icon": "exclamation.png",

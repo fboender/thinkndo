@@ -54,6 +54,7 @@ quick_icon_map = {
     "*r ": "bullet_red.png",
     "*p ": "bullet_purple.png",
     ": ": "clock.png",
+    "^ ": "note.png",
     "!! ": "exclamation.png",
     "[] ": "check_box_uncheck.png",
     "db ": "database.png",
