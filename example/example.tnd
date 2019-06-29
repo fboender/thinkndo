@@ -192,12 +192,61 @@
             "children": []
           },
           {
-            "title": "\"* Bullet points\"",
+            "title": "\"* Bullet points\" (View subtree for differenly colored bullets)",
             "icon": "bullet_black.png",
             "checked": false,
-            "expanded": true,
-            "auto_collapse": false,
-            "children": []
+            "expanded": false,
+            "auto_collapse": true,
+            "children": [
+              {
+                "title": "\"* Black bullet\"",
+                "icon": "bullet_black.png",
+                "checked": false,
+                "expanded": true,
+                "auto_collapse": false,
+                "children": []
+              },
+              {
+                "title": "\"*g Green bullet\"",
+                "icon": "bullet_green.png",
+                "checked": false,
+                "expanded": true,
+                "auto_collapse": false,
+                "children": []
+              },
+              {
+                "title": "\"*b Blue bullet\"",
+                "icon": "bullet_blue.png",
+                "checked": false,
+                "expanded": true,
+                "auto_collapse": false,
+                "children": []
+              },
+              {
+                "title": "\"*o Orange bullet\"",
+                "icon": "bullet_orange.png",
+                "checked": false,
+                "expanded": true,
+                "auto_collapse": false,
+                "children": []
+              },
+              {
+                "title": "\"*r Red bullet\"",
+                "icon": "bullet_red.png",
+                "checked": false,
+                "expanded": true,
+                "auto_collapse": false,
+                "children": []
+              },
+              {
+                "title": "\"*p Purple bullet\"",
+                "icon": "bullet_purple.png",
+                "checked": false,
+                "expanded": true,
+                "auto_collapse": false,
+                "children": []
+              }
+            ]
           },
           {
             "title": "\": For items that are on the clock\"",
@@ -242,6 +291,14 @@
           {
             "title": "\"usr User\"",
             "icon": "user.png",
+            "checked": false,
+            "expanded": true,
+            "auto_collapse": false,
+            "children": []
+          },
+          {
+            "title": "\"ph Phone\"",
+            "icon": "phone.png",
             "checked": false,
             "expanded": true,
             "auto_collapse": false,

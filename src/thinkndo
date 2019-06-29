@@ -47,12 +47,18 @@ quick_icon_map = {
     "B ": "bug.png",
     "> ": "arrow_right.png",
     "* ": "bullet_black.png",
+    "*g ": "bullet_green.png",
+    "*b ": "bullet_blue.png",
+    "*o ": "bullet_orange.png",
+    "*r ": "bullet_red.png",
+    "*p ": "bullet_purple.png",
     ": ": "clock.png",
     "!! ": "exclamation.png",
     "[] ": "check_box_uncheck.png",
     "db ": "database.png",
     "doc ": "document_editing.png",
     "usr ": "user.png",
+    "ph ": "phone.png",
 }
 
 class Node:
