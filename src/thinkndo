@@ -4,11 +4,13 @@
 
 import sys
 import argparse
+import os
 import shutil
 import signal
 import json
 import logging
 import copy
+from pathlib import Path
 from PyQt5.Qt import *
 from PyQt5 import QtCore
 
@@ -550,7 +552,17 @@ if __name__ == "__main__":
     # Backup file
     shutil.copy2(args.path, "{}.bak".format(args.path))
 
+    # Lock file
+    lock_path = "{}.lock".format(args.path)
+    if os.path.exists(lock_path):
+        sys.stderr.write("{} found. Aborting\n".format(lock_path))
+        sys.exit(1)
+    Path(lock_path).touch()
+
     # GUI
     app = QApplication([])
     gui = GUI(args.path)
     app.exec_()
+
+    # Unlock
+    os.unlink(lock_path)
