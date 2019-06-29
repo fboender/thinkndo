@@ -147,6 +147,8 @@ class GUI:
 
         # Main window
         self.win = QMainWindow()
+        self.win.setWindowIcon(QIcon("thinkndo.png"))
+        self.win.setWindowTitle("Think'n'Do")
         geometry = self.settings.value("geometry")
         if geometry is not None:
             self.win.restoreGeometry(geometry);
