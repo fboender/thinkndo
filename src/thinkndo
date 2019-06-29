@@ -10,6 +10,7 @@ import signal
 import json
 import logging
 import copy
+import uuid
 from pathlib import Path
 from PyQt5.Qt import *
 from PyQt5 import QtCore
@@ -66,12 +67,16 @@ class Node:
     Nodes represent a single leaf in the outline tree.
     """
     def __init__(self, title, icon=None, checked=False, expanded=False,
-                 auto_collapse=False):
+                 auto_collapse=False, uniq_id=None):
         self.title = title
         self.icon = icon
         self.checked = checked
         self.expanded = expanded
         self.auto_collapse = auto_collapse
+        if uniq_id is not None:
+            self.uniq_id = uniq_id
+        else:
+            self.uniq_id = uuid.uuid4().hex
 
     @staticmethod
     def from_dict(d):
@@ -80,11 +85,12 @@ class Node:
         of type Node.
         """
         node = Node(
-            d["title"],
-            d["icon"],
-            d.get("checked", False),
-            d.get("expanded", True),
-            d.get("auto_collapse", False),
+            title=d["title"],
+            icon=d["icon"],
+            checked=d.get("checked", False),
+            expanded=d.get("expanded", True),
+            auto_collapse=d.get("auto_collapse", False),
+            uniq_id=d.get("uniq_id", None),
         )
 
         return node
@@ -103,6 +109,7 @@ class Node:
         Create a deep-copy of this node, and reset the checked state.
         """
         new_node = Node.from_dict(self.to_dict())
+        new_node.uniq_id = uuid.uuid4().hex
         if new_node.checked is True:
             new_node.checked = False
         return new_node
@@ -112,6 +119,7 @@ class Node:
         Convert this node to a dictionary representation.
         """
         s = {
+            "uniq_id": self.uniq_id,
             "title": self.title,
             "icon": self.icon,
             "checked": self.checked,
@@ -131,8 +139,8 @@ class Node:
         return item
 
     def __repr__(self):
-        return "<Node title='{}', icon={}, checked={}, expanded={} auto_collapse={}>".format(
-            self.title, self.icon, self.checked, self.expanded, self.auto_collapse
+        return "<Node uniq_id='{}', title='{}', icon={}, checked={}, expanded={} auto_collapse={}>".format(
+            self.uniq_id, self.title, self.icon, self.checked, self.expanded, self.auto_collapse
         )
 
 
@@ -143,6 +151,7 @@ class GUI:
     def __init__(self, path):
         self.path = path
         self.settings = QSettings("electricmonk", app_name)
+        self.cursor = None
         self.del_buf = None
 
         # Main window
@@ -156,6 +165,7 @@ class GUI:
 
         # Node tree
         self.node_view = QTreeView(self.win)
+        self.node_view.setWordWrap(True)
         self.node_model = QStandardItemModel(0, 1)
         self.node_model.setHorizontalHeaderLabels(
             [
@@ -198,6 +208,9 @@ class GUI:
         index = self.node_model.indexFromItem(item)
         if node.expanded is True and node.auto_collapse is False:
             self.node_view.setExpanded(index, True)
+
+        if node.uniq_id == self.cursor:
+            self.node_view.setCurrentIndex(index)
 
         return item
 
@@ -278,6 +291,9 @@ class GUI:
             if item not in no_collapse and item["node"].auto_collapse is True:
                 self.node_view.setExpanded(item["index"], False)
             item = self.get(item["index"].parent())
+
+        # Set cursor to new item uniq_id
+        self.cursor = new["node"].uniq_id
 
     def _ev_item_changed(self, item):
         logging.info("ev_item_changed: {}".format(item))
@@ -520,18 +536,23 @@ class GUI:
         Load a tree from a JSON file.
         """
         with open(path, "r") as f:
-            raw_nodes = json.load(f)
+            tnd = json.load(f)
 
-        self._deserialize(raw_nodes, self.node_root)
+        self.cursor = tnd.get("cursor", None)
+        self._deserialize(tnd["nodes"], self.node_root)
 
     def save(self, path):
         """
         Save a tree to a JSON file.
         """
         raw_nodes = self._serialize(self.node_root)
+        tnd = {
+            "cursor": self.cursor,
+            "nodes": raw_nodes
+        }
 
         with open(path, "w") as f:
-            json.dump(raw_nodes, f, indent=2)
+            json.dump(tnd, f, indent=2)
 
     def close(self):
         self.save(self.path)
