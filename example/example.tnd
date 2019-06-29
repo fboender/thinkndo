@@ -63,30 +63,6 @@
             "children": []
           },
           {
-            "title": "Shift-K moves an item up in the current tree.",
-            "icon": "bullet_black.png",
-            "checked": false,
-            "expanded": true,
-            "auto_collapse": false,
-            "children": []
-          },
-          {
-            "title": "Shift-J moves an item down in the current tree.",
-            "icon": "bullet_black.png",
-            "checked": false,
-            "expanded": true,
-            "auto_collapse": false,
-            "children": []
-          },
-          {
-            "title": "The \"d\" key deletes an item, which can then paste somewhere else with \"p\" (below) and \"P\" (above).",
-            "icon": "bullet_black.png",
-            "checked": false,
-            "expanded": true,
-            "auto_collapse": false,
-            "children": []
-          },
-          {
             "title": "Use \"o\" and \"O\" to insert new items.",
             "icon": "bullet_black.png",
             "checked": false,
@@ -97,6 +73,30 @@
           {
             "title": "Use \"a\" to edit an item.",
             "icon": "bullet_black.png",
+            "checked": false,
+            "expanded": true,
+            "auto_collapse": false,
+            "children": []
+          },
+          {
+            "title": "Press \"x\" to mark an item done.",
+            "icon": "bullet_black.png",
+            "checked": false,
+            "expanded": true,
+            "auto_collapse": false,
+            "children": []
+          },
+          {
+            "title": "\"shift-k\" moves an item up in the current tree, \"shift-j\" moves it down.",
+            "icon": "bullet_black.png",
+            "checked": false,
+            "expanded": true,
+            "auto_collapse": false,
+            "children": []
+          },
+          {
+            "title": "The \"d\" key deletes an item, which can then paste somewhere else with \"p\" (below) and \"P\" (above).",
+            "icon": "bullet_orange.png",
             "checked": false,
             "expanded": true,
             "auto_collapse": false,
