@@ -79,23 +79,6 @@ class Node:
         else:
             self.uniq_id = uuid.uuid4().hex
 
-    @staticmethod
-    def from_dict(d):
-        """
-        Convert a dictionary representation of a node into an object
-        of type Node.
-        """
-        node = Node(
-            title=d["title"],
-            icon=d["icon"],
-            checked=d.get("checked", False),
-            expanded=d.get("expanded", True),
-            auto_collapse=d.get("auto_collapse", False),
-            uniq_id=d.get("uniq_id", None),
-        )
-
-        return node
-
     def get_icon(self):
         """
         Return the icon that should currently be used for this node.
@@ -114,6 +97,23 @@ class Node:
         if new_node.checked is True:
             new_node.checked = False
         return new_node
+
+    @staticmethod
+    def from_dict(d):
+        """
+        Convert a dictionary representation of a node into an object
+        of type Node.
+        """
+        node = Node(
+            title=d["title"],
+            icon=d["icon"],
+            checked=d.get("checked", False),
+            expanded=d.get("expanded", True),
+            auto_collapse=d.get("auto_collapse", False),
+            uniq_id=d.get("uniq_id", None),
+        )
+
+        return node
 
     def to_dict(self):
         """
@@ -162,7 +162,9 @@ class GUI:
         geometry = self.settings.value("geometry")
         if geometry is not None:
             self.win.restoreGeometry(geometry);
-        self.win.closeEvent = self._ev_close
+
+        # FIXME
+        self.win.closeEvent = self._act_close
 
         # Node tree
         self.node_view = QTreeView(self.win)
@@ -178,17 +180,42 @@ class GUI:
 
         self.load(self.path)
 
-        # Signals
+        # Monkey-patch QTreeView's keyPressEvent. This would be cleaner of it
+        # used inheritence, but would complicate the code.
         self.orig_node_view_keyPressEvent = self.node_view.keyPressEvent
-        self.node_view.keyPressEvent = self._ev_key_press
+        self.node_view.keyPressEvent = self.keyPressEvent
+
+        # Signals
         self.node_view.expanded.connect(self._ev_expanded)
         self.node_view.collapsed.connect(self._ev_collapsed)
         self.node_view.selectionModel().currentChanged.connect(self._ev_current_changed)
         self.node_model.itemChanged.connect(self._ev_item_changed)
-        self.node_model.rowsRemoved.connect(self._ev_changed)
 
         self.win.setCentralWidget(self.node_view)
         self.win.show()
+
+    def load(self, path):
+        """
+        Load a tree from a JSON file.
+        """
+        with open(path, "r") as f:
+            tnd = json.load(f)
+
+        self.cursor = tnd.get("cursor", None)
+        self.deserialize(tnd["nodes"], self.node_root)
+
+    def save(self, path):
+        """
+        Save a tree to a JSON file.
+        """
+        raw_nodes = self.serialize(self.node_root)
+        tnd = {
+            "cursor": self.cursor,
+            "nodes": raw_nodes
+        }
+
+        with open(path, "w") as f:
+            json.dump(tnd, f, indent=2)
 
     def insert_node(self, node, parent, row=None):
         """
@@ -240,14 +267,39 @@ class GUI:
             "parent_item": parent_item
         }
 
-    def _ev_dump(self):
-        cur = self.get()
-        sys.stdout.write(repr(cur) + "\n")
-        sys.stdout.flush()
+    def close(self):
+        self.save(self.path)
+        self.settings.setValue("geometry", self.win.saveGeometry())
+        self.settings.sync()
+        QCoreApplication.quit()
 
-        print(self._serialize(cur["item"]))
+    def serialize(self, parent):
+        """
+        Serialize the QStandardItem `parent`, including its children to a
+        Python dicts
+        """
+        raw_nodes = []
+        for i in range(0, parent.rowCount()):
+            item = parent.child(i)
+            node = item.data()
+            raw_node = node.to_dict()
+            raw_nodes.append(raw_node)
+            raw_node["children"] = self.serialize(item)
 
-    def _ev_key_press(self, keypress):
+        return raw_nodes
+
+    def deserialize(self, l, parent, row=None):
+        """
+        Deserialize dicts in list `l` into QStandardItemModels under `parent`.
+        The dicts in `l` are converted to instances of Node() which are set as
+        data on each of the items in the tree.
+        """
+        for child in l:
+            node = Node.from_dict(child)
+            tree = self.insert_node(node, parent)
+            self.deserialize(child["children"], tree)
+
+    def keyPressEvent(self, keypress):
         """
         Handle key press events. Looks in `keypress_items` for actions.
         """
@@ -259,10 +311,20 @@ class GUI:
                     (int(keypress.modifiers()) & keypress_item["modifiers"] == keypress_item["modifiers"])
                 )
                ):
-                event_cb = getattr(self, "_ev_{}".format(keypress_item["event"]))
+                event_cb = getattr(self, "_act_{}".format(keypress_item["event"]))
                 event_cb()
                 return
         self.orig_node_view_keyPressEvent(keypress)
+
+    def _ev_expanded(self, index):
+        cur = self.get(index)
+        cur["node"].expanded = True
+        self.save(self.path)
+
+    def _ev_collapsed(self, index):
+        item = self.get(index)
+        item["node"].expanded = False
+        self.save(self.path)
 
     def _ev_current_changed(self, new_index, prev_index):
         """
@@ -317,20 +379,23 @@ class GUI:
 
         self.save(self.path)
 
-    def _ev_changed(self):
-        #self.save(self.path)
-        pass
-
-    def _ev_delete(self):
+    def _act_dump(self):
         cur = self.get()
-        children = self._serialize(cur["item"])
+        sys.stdout.write(repr(cur) + "\n")
+        sys.stdout.flush()
+
+        print(self.serialize(cur["item"]))
+
+    def _act_delete(self):
+        cur = self.get()
+        children = self.serialize(cur["item"])
         self.del_buf = cur["node"].to_dict()
         self.del_buf["children"] = children
         self.node_model.removeRows(cur["index"].row(), 1, cur["index"].parent())
 
         self.save(self.path)
 
-    def _ev_paste_above(self):
+    def _act_paste_above(self):
         if self.del_buf is None:
             return
 
@@ -339,9 +404,9 @@ class GUI:
 
         node = Node.from_dict(self.del_buf)
         new_item = self.insert_node(node, cur["parent_item"], cur_row)
-        self._deserialize(self.del_buf["children"], new_item)
+        self.deserialize(self.del_buf["children"], new_item)
 
-    def _ev_paste_below(self):
+    def _act_paste_below(self):
         if self.del_buf is None:
             return
 
@@ -350,34 +415,24 @@ class GUI:
 
         node = Node.from_dict(self.del_buf)
         new_item = self.insert_node(node, cur["parent_item"], cur_row + 1)
-        self._deserialize(self.del_buf["children"], new_item)
+        self.deserialize(self.del_buf["children"], new_item)
 
-    def _ev_expanded(self, index):
-        cur = self.get(index)
-        cur["node"].expanded = True
-        self.save(self.path)
-
-    def _ev_collapsed(self, index):
-        item = self.get(index)
-        item["node"].expanded = False
-        self.save(self.path)
-
-    def _ev_toggle_auto_collapse(self):
+    def _act_toggle_auto_collapse(self):
         cur = self.get()
         cur["node"].auto_collapse = not cur["node"].auto_collapse
         if cur["node"].auto_collapse is True:
             self.node_view.setExpanded(cur["index"], False)
 
-    def _ev_toggle_expanded(self):
+    def _act_toggle_expanded(self):
         cur = self.get()
         inv_expanded = not self.node_view.isExpanded(cur["index"])
         self.node_view.setExpanded(cur["index"], inv_expanded)
 
-    def _ev_edit(self):
+    def _act_edit(self):
         cur = self.get()
         self.node_view.edit(cur["index"])
 
-    def _ev_insert_above(self):
+    def _act_insert_above(self):
         cur = self.get()
         cur_row = cur["index"].row()
         if cur_row > 0:
@@ -395,7 +450,7 @@ class GUI:
         self.node_view.setCurrentIndex(new_index)
         self.node_view.edit(new_index)
 
-    def _ev_insert_below(self):
+    def _act_insert_below(self):
         cur = self.get()
 
         # Create new node and insert
@@ -408,9 +463,9 @@ class GUI:
         self.node_view.setCurrentIndex(new_index)
         self.node_view.edit(new_index)
 
-    def _ev_move_up(self):
+    def _act_move_up(self):
         cur = self.get()
-        children = self._serialize(cur["item"])
+        children = self.serialize(cur["item"])
         cur_row = cur["item"].row()
         cur_index_parent = cur["index"].parent()
 
@@ -420,15 +475,15 @@ class GUI:
 
         self.node_model.removeRows(cur_row, 1, cur_index_parent)
         new_item = self.insert_node(cur["node"], cur["parent_item"], cur_row - 1)
-        self._deserialize(children, new_item)
+        self.deserialize(children, new_item)
         new_index = self.node_model.indexFromItem(new_item)
         self.node_view.setCurrentIndex(new_index)
         cur_index = self.node_view.currentIndex()
         cur_item = self.node_model.itemFromIndex(cur_index)
 
-    def _ev_move_down(self):
+    def _act_move_down(self):
         cur = self.get()
-        children = self._serialize(cur["item"])
+        children = self.serialize(cur["item"])
         cur_row = cur["item"].row()
         cur_index_parent = cur["index"].parent()
 
@@ -438,11 +493,11 @@ class GUI:
 
         self.node_model.removeRows(cur_row, 1, cur_index_parent)
         new_item = self.insert_node(cur["node"], cur["parent_item"], cur_row + 1)
-        self._deserialize(children, new_item)
+        self.deserialize(children, new_item)
         new_index = self.node_model.indexFromItem(new_item)
         self.node_view.setCurrentIndex(new_index)
 
-    def _ev_cursor_up(self):
+    def _act_cursor_up(self):
         cur = self.get()
 
         # Move to next row in current indent level
@@ -455,13 +510,13 @@ class GUI:
                 new_index = cur["index"]
         self.node_view.setCurrentIndex(new_index)
 
-    def _ev_cursor_down(self):
+    def _act_cursor_down(self):
         cur = self.get()
         new_index = cur["index"].siblingAtRow(cur["index"].row() + 1)
         if new_index.row() != -1:
             self.node_view.setCurrentIndex(new_index)
 
-    def _ev_cursor_left(self):
+    def _act_cursor_left(self):
         cur = self.get()
         new_index = self.node_model.indexFromItem(cur["parent_item"])
 
@@ -469,7 +524,7 @@ class GUI:
         if cur["item"].parent() is not None:
             self.node_view.setCurrentIndex(new_index)
 
-    def _ev_cursor_right(self):
+    def _act_cursor_right(self):
         cur = self.get()
         has_children = self.node_model.hasChildren(cur["index"])
 
@@ -490,76 +545,22 @@ class GUI:
                                                   Qt.NoModifier)
             self.node_view.setCurrentIndex(new_index)
 
-    def _ev_toggle_done(self):
+    def _act_toggle_done(self):
         cur = self.get()
         cur["node"].checked = not cur["node"].checked
         cur["item"].setIcon(QIcon("icons/" + cur["node"].get_icon()))
 
         self.save(self.path)
 
-    def _ev_close(self, event=None):
+    def _act_close(self, event=None):
         """
         Catch the user pressing the [X] button and cleanly close the app.
         """
         self.close()
 
-    def _ev_save(self):
+    def _act_save(self):
         self.save(self.path)
 
-    def _serialize(self, parent):
-        """
-        Serialize the QStandardItem `parent`, including its children to a
-        Python dicts
-        """
-        raw_nodes = []
-        for i in range(0, parent.rowCount()):
-            item = parent.child(i)
-            node = item.data()
-            raw_node = node.to_dict()
-            raw_nodes.append(raw_node)
-            raw_node["children"] = self._serialize(item)
-
-        return raw_nodes
-
-    def _deserialize(self, l, parent, row=None):
-        """
-        Deserialize dicts in list `l` into QStandardItemModels under `parent`.
-        The dicts in `l` are converted to instances of Node() which are set as
-        data on each of the items in the tree.
-        """
-        for child in l:
-            node = Node.from_dict(child)
-            tree = self.insert_node(node, parent)
-            self._deserialize(child["children"], tree)
-
-    def load(self, path):
-        """
-        Load a tree from a JSON file.
-        """
-        with open(path, "r") as f:
-            tnd = json.load(f)
-
-        self.cursor = tnd.get("cursor", None)
-        self._deserialize(tnd["nodes"], self.node_root)
-
-    def save(self, path):
-        """
-        Save a tree to a JSON file.
-        """
-        raw_nodes = self._serialize(self.node_root)
-        tnd = {
-            "cursor": self.cursor,
-            "nodes": raw_nodes
-        }
-
-        with open(path, "w") as f:
-            json.dump(tnd, f, indent=2)
-
-    def close(self):
-        self.save(self.path)
-        self.settings.setValue("geometry", self.win.saveGeometry())
-        self.settings.sync()
-        QCoreApplication.quit()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
