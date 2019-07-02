@@ -136,6 +136,15 @@
               "children": []
             },
             {
+              "uniq_id": "d2c3271863e049e4b9f5bc57919f92fa",
+              "title": "Enter visual mode with \"shift-v\" and delete or toggle multiple items.",
+              "icon": "bullet_black.png",
+              "checked": false,
+              "expanded": true,
+              "auto_collapse": false,
+              "children": []
+            },
+            {
               "uniq_id": "741c722d38ef4bdd9dcc756e0c66346f",
               "title": "For more keys, see the README.md",
               "icon": "bullet_black.png",
