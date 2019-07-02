@@ -295,6 +295,16 @@ class GUI:
             "parent_item": parent_item
         }
 
+    def get_sel(self):
+        """
+        Return a list of all selected nodes.
+        """
+        sel_model = self.node_view.selectionModel()
+        nodes = []
+        for index in reversed(sel_model.selectedIndexes()):
+            nodes.append(self.get(index))
+        return nodes
+
     def close(self):
         self.save(self.path)
         self.settings.setValue("geometry", self.win.saveGeometry())
@@ -424,20 +434,20 @@ class GUI:
 
     def _act_delete(self):
         self.del_buf = []
-        sel_model = self.node_view.selectionModel()
+        selected = self.get_sel()
 
-        for index in reversed(sel_model.selectedIndexes()):
-            d = self.get(index)
-            node_dict = d["node"].to_dict()
-            node_dict["children"] = self.serialize(d["item"])
+        # Serialize selected items into delete buffer
+        for s in selected:
+            node_dict = s["node"].to_dict()
+            node_dict["children"] = self.serialize(s["item"])
             self.del_buf.append(node_dict)
 
-        for index in reversed(sel_model.selectedIndexes()):
-            self.node_model.removeRows(index.row(), 1, index.parent())
+        # Remove selected rows
+        for s in selected:
+            self.node_model.removeRows(s["index"].row(), 1, s["index"].parent())
 
-        if self.mode == MODE_SELECT:
-            self._act_toggle_mode_select()
-
+        # Go back to normal mode and save
+        self.set_mode(MODE_NORMAL)
         self.save(self.path)
 
     def _act_paste_above(self):
@@ -613,10 +623,12 @@ class GUI:
         """
         Toggle t he current node as "Done".
         """
-        cur = self.get()
-        cur["node"].checked = not cur["node"].checked
-        cur["item"].setIcon(QIcon("icons/" + cur["node"].get_icon()))
+        sel = self.get_sel()
+        for n in sel:
+            n["node"].checked = not n["node"].checked
+            n["item"].setIcon(QIcon("icons/" + n["node"].get_icon()))
 
+        self.set_mode(MODE_NORMAL)
         self.save(self.path)
 
     def _act_escape(self):
