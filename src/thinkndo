@@ -17,6 +17,30 @@ from PyQt5 import QtCore
 
 app_name = "doen"
 
+start_tree = {
+    "cursor": "0d1fb54fd3194007835202d076d81e59",
+    "nodes": [
+        {
+            "uniq_id": "21198391c2de42f08f0d935116d15be8",
+            "title": "Create todo list",
+            "icon": "check_box_uncheck.png",
+            "checked": True,
+            "expanded": True,
+            "auto_collapse": False,
+            "children": []
+        },
+        {
+            "uniq_id": "0d1fb54fd3194007835202d076d81e59",
+            "title": "Buy bread",
+            "icon": "check_box_uncheck.png",
+            "checked": False,
+            "expanded": True,
+            "auto_collapse": False,
+            "children": []
+        }
+    ]
+}
+
 keypress_items = [
     {"key": Qt.Key_A, "event": "edit"},
     {"key": Qt.Key_C, "event": "toggle_auto_collapse", "modifiers": Qt.ShiftModifier},
@@ -580,12 +604,17 @@ if __name__ == "__main__":
     else:
         logging.basicConfig(level=logging.WARN)
 
-    # Backup file
-    shutil.copy2(args.path, "{}.bak".format(args.path))
+    # Create new file if it doesn't exist yet.
+    if os.path.exists(args.path) is False:
+        with open(args.path, "w") as f:
+            json.dump(start_tree, f, indent=2)
+    else:
+        # Backup file
+        shutil.copy2(args.path, "{}.bak".format(args.path))
 
     # Lock file
     lock_path = "{}.lock".format(args.path)
-    if os.path.exists(lock_path):
+    if os.path.isfile(lock_path):
         sys.stderr.write("{} found. Aborting\n".format(lock_path))
         sys.exit(1)
     Path(lock_path).touch()
