@@ -208,10 +208,12 @@ class GUI:
 
         self.load(self.path)
 
-        # Monkey-patch QTreeView's keyPressEvent. This would be cleaner of it
-        # used inheritence, but would complicate the code.
+        # Monkey-patch QTreeView. This would be cleaner of it used
+        # inheritence, but would complicate the code.
         self.orig_node_view_keyPressEvent = self.node_view.keyPressEvent
         self.node_view.keyPressEvent = self.keyPressEvent
+        self.orig_node_view_closeEditor = self.node_view.closeEditor
+        self.node_view.closeEditor = self.closeEditor
 
         # Signals
         self.node_view.expanded.connect(self._ev_expanded)
@@ -488,6 +490,12 @@ class GUI:
     def _act_edit(self):
         cur = self.get()
         self.node_view.edit(cur["index"])
+
+    def closeEditor(self, editor, hint):
+        self.orig_node_view_closeEditor(editor, hint)
+        if editor.text() == "":
+            cur = self.get()
+            self.node_model.removeRows(cur["index"].row(), 1, cur["index"].parent())
 
     def _act_insert_above(self):
         cur = self.get()
