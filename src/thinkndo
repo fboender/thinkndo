@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-# FIXME: ev_kb_
-
 import sys
 import argparse
 import os
@@ -58,9 +56,11 @@ keypress_items = [
     {"key": Qt.Key_P, "event": "paste_below"},
     {"key": Qt.Key_Q, "event": "close"},
     {"key": Qt.Key_S, "event": "save"},
+    {"key": Qt.Key_V, "event": "toggle_mode_select"},
     {"key": Qt.Key_X, "event": "toggle_done"},
     {"key": Qt.Key_Z, "event": "dump"},
-    {"key": Qt.Key_Escape, "event": "close"},
+    {"key": Qt.Key_Escape, "event": "escape"},
+    {"key": Qt.Key_Space, "event": "select"},
 ]
 
 quick_icon_map = {
@@ -86,6 +86,9 @@ quick_icon_map = {
     "usr ": "user.png",
     "ph ": "phone.png",
 }
+
+MODE_NORMAL=0
+MODE_SELECT=1
 
 class Node:
     """
@@ -177,6 +180,8 @@ class GUI:
         self.path = path
         self.settings = QSettings("electricmonk", app_name)
         self.cursor = None
+        self.mode = MODE_NORMAL
+        self.mode_select_cursor = None
         self.del_buf = None
 
         # Main window
@@ -187,7 +192,6 @@ class GUI:
         if geometry is not None:
             self.win.restoreGeometry(geometry);
 
-        # FIXME
         self.win.closeEvent = self._act_close
 
         # Node tree
@@ -404,18 +408,35 @@ class GUI:
         self.save(self.path)
 
     def _act_dump(self):
+        print("cur")
+        print(70 * "-")
         cur = self.get()
         sys.stdout.write(repr(cur) + "\n")
         sys.stdout.flush()
 
+        print("cur['item']")
+        print(70 * "-")
         print(self.serialize(cur["item"]))
 
+        print("del_buf")
+        print(70 * "-")
+        print(json.dumps(self.del_buf, indent=2))
+
     def _act_delete(self):
-        cur = self.get()
-        children = self.serialize(cur["item"])
-        self.del_buf = cur["node"].to_dict()
-        self.del_buf["children"] = children
-        self.node_model.removeRows(cur["index"].row(), 1, cur["index"].parent())
+        self.del_buf = []
+        sel_model = self.node_view.selectionModel()
+
+        for index in reversed(sel_model.selectedIndexes()):
+            d = self.get(index)
+            node_dict = d["node"].to_dict()
+            node_dict["children"] = self.serialize(d["item"])
+            self.del_buf.append(node_dict)
+
+        for index in reversed(sel_model.selectedIndexes()):
+            self.node_model.removeRows(index.row(), 1, index.parent())
+
+        if self.mode == MODE_SELECT:
+            self._act_toggle_mode_select()
 
         self.save(self.path)
 
@@ -426,9 +447,10 @@ class GUI:
         cur = self.get()
         cur_row = cur["item"].row()
 
-        node = Node.from_dict(self.del_buf)
-        new_item = self.insert_node(node, cur["parent_item"], cur_row)
-        self.deserialize(self.del_buf["children"], new_item)
+        for row in self.del_buf:
+            node = Node.from_dict(row)
+            new_item = self.insert_node(node, cur["parent_item"], cur_row)
+            self.deserialize(row["children"], new_item)
 
     def _act_paste_below(self):
         if self.del_buf is None:
@@ -437,9 +459,10 @@ class GUI:
         cur = self.get()
         cur_row = cur["item"].row()
 
-        node = Node.from_dict(self.del_buf)
-        new_item = self.insert_node(node, cur["parent_item"], cur_row + 1)
-        self.deserialize(self.del_buf["children"], new_item)
+        for row in self.del_buf:
+            node = Node.from_dict(row)
+            new_item = self.insert_node(node, cur["parent_item"], cur_row + 1)
+            self.deserialize(row["children"], new_item)
 
     def _act_toggle_auto_collapse(self):
         cur = self.get()
@@ -522,23 +545,40 @@ class GUI:
         self.node_view.setCurrentIndex(new_index)
 
     def _act_cursor_up(self):
-        cur = self.get()
-
-        # Move to next row in current indent level
-        new_index = cur["index"].siblingAtRow(cur["index"].row() - 1)
-        if new_index.row() == -1:
-            # Top of current indent. Move to parent
-            new_index = cur["index"].parent()
-            if new_index.row() == -1:
-                # Don't do anything
-                new_index = cur["index"]
-        self.node_view.setCurrentIndex(new_index)
+        if self.mode == MODE_NORMAL:
+            # Move cursor up
+            cur = self.get()
+            new_index = cur["index"].siblingAtRow(cur["index"].row() - 1)
+            if new_index.row() != -1:
+                self.node_view.setCurrentIndex(new_index)
+        elif self.mode == MODE_SELECT:
+            # Grow selection down
+            self.mode_select_cursor = self.get(self.mode_select_cursor)
+            cursor = self.mode_select_cursor
+            if cursor is None:
+                return
+            next_index = cursor["index"].siblingAtRow(cursor["index"].row() - 1)
+            sel_model = self.node_view.selectionModel()
+            sel_model.select(next_index, QItemSelectionModel.Select)
+            self.mode_select_cursor  = next_index
 
     def _act_cursor_down(self):
-        cur = self.get()
-        new_index = cur["index"].siblingAtRow(cur["index"].row() + 1)
-        if new_index.row() != -1:
-            self.node_view.setCurrentIndex(new_index)
+        if self.mode == MODE_NORMAL:
+            # Move cursor down
+            cur = self.get()
+            new_index = cur["index"].siblingAtRow(cur["index"].row() + 1)
+            if new_index.row() != -1:
+                self.node_view.setCurrentIndex(new_index)
+        elif self.mode == MODE_SELECT:
+            # Grow selection down
+            self.mode_select_cursor = self.get(self.mode_select_cursor)
+            cursor = self.mode_select_cursor
+            if cursor is None:
+                return
+            next_index = cursor["index"].siblingAtRow(cursor["index"].row() + 1)
+            sel_model = self.node_view.selectionModel()
+            sel_model.select(next_index, QItemSelectionModel.Select)
+            self.mode_select_cursor  = next_index
 
     def _act_cursor_left(self):
         cur = self.get()
@@ -570,17 +610,40 @@ class GUI:
             self.node_view.setCurrentIndex(new_index)
 
     def _act_toggle_done(self):
+        """
+        Toggle t he current node as "Done".
+        """
         cur = self.get()
         cur["node"].checked = not cur["node"].checked
         cur["item"].setIcon(QIcon("icons/" + cur["node"].get_icon()))
 
         self.save(self.path)
 
+    def _act_escape(self):
+        """
+        Handle the escape key by switching back to normal mode or quiting the
+        application.
+        """
+        if self.mode == MODE_SELECT:
+            self._act_toggle_mode_select()
+        else:
+            self.act_close()
+
     def _act_close(self, event=None):
         """
         Catch the user pressing the [X] button and cleanly close the app.
         """
         self.close()
+
+    def _act_toggle_mode_select(self):
+        """
+        Switch between select mode and normal mode.
+        """
+        if self.mode == MODE_NORMAL:
+            self.mode = MODE_SELECT
+        else:
+            self.mode = MODE_NORMAL
+            self.mode_select_cursor = None
 
     def _act_save(self):
         self.save(self.path)
