@@ -624,10 +624,26 @@ class GUI:
         Handle the escape key by switching back to normal mode or quiting the
         application.
         """
-        if self.mode == MODE_SELECT:
-            self._act_toggle_mode_select()
+        if self.mode != MODE_NORMAL:
+            self.set_mode(MODE_NORMAL)
         else:
-            self.act_close()
+            self._act_close()
+
+    def set_mode(self, mode):
+        """
+        Switch modes.
+        """
+        self.mode = mode
+
+        if mode == MODE_NORMAL:
+            # Reset everything to normal mode
+            cur = self.get()
+            self.mode = MODE_NORMAL
+            sel_model = self.node_view.selectionModel()
+            self.node_view.setCurrentIndex(cur["index"])
+            sel_model.select(cur["index"], QItemSelectionModel.Select)
+            self.mode_select_cursor = None
+
 
     def _act_close(self, event=None):
         """
@@ -640,10 +656,9 @@ class GUI:
         Switch between select mode and normal mode.
         """
         if self.mode == MODE_NORMAL:
-            self.mode = MODE_SELECT
+            self.set_mode(MODE_SELECT)
         else:
-            self.mode = MODE_NORMAL
-            self.mode_select_cursor = None
+            self.set_mode(MODE_NORMAL)
 
     def _act_save(self):
         self.save(self.path)
