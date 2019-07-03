@@ -50,6 +50,7 @@ keypress_items = [
     {"key": Qt.Key_K, "event": "move_up", "modifiers": Qt.ShiftModifier},
     {"key": Qt.Key_K, "event": "cursor_up"},
     {"key": Qt.Key_L, "event": "cursor_right"},
+    {"key": Qt.Key_N, "event": "search_next"},
     {"key": Qt.Key_O, "event": "insert_above", "modifiers": Qt.ShiftModifier},
     {"key": Qt.Key_O, "event": "insert_below"},
     {"key": Qt.Key_P, "event": "paste_above", "modifiers": Qt.ShiftModifier},
@@ -60,6 +61,7 @@ keypress_items = [
     {"key": Qt.Key_X, "event": "toggle_done"},
     {"key": Qt.Key_Z, "event": "dump"},
     {"key": Qt.Key_Escape, "event": "escape"},
+    {"key": Qt.Key_Slash, "event": "search"},
     {"key": Qt.Key_Space, "event": "select"},
 ]
 
@@ -183,6 +185,7 @@ class GUI:
         self.mode = MODE_NORMAL
         self.mode_select_cursor = None
         self.del_buf = None
+        self.search_results = None
 
         # Main window
         self.win = QMainWindow()
@@ -648,6 +651,45 @@ class GUI:
             self.set_mode(MODE_NORMAL)
         else:
             self._act_close()
+
+    def search(self, text, parent=None):
+        """
+        Show a text-entry dialog window and search for the entered text.
+        """
+        if parent is None:
+            parent = self.node_model.invisibleRootItem()
+
+        results = []
+        for i in range(0, parent.rowCount()):
+            child = parent.child(i)
+            node = child.data()
+            if text.lower() in node.title.lower():
+                results.append(child)
+            results.extend(self.search(text, child))
+        return results
+
+    def _act_search(self):
+        """
+        Activate search
+        """
+        search, action = QInputDialog.getText(None, "Search", "Search term", QLineEdit.Normal, "")
+        if action == False:
+            return
+
+        results = self.search(search)
+        if results:
+            self.search_results = results
+            self._act_search_next()
+
+    def _act_search_next(self):
+        if self.search_results is None:
+            return
+
+        # Ring buffer the search results
+        result = self.search_results.pop(0)
+        self.search_results.append(result)
+        new_index = self.node_model.indexFromItem(result)
+        self.node_view.setCurrentIndex(new_index)
 
     def set_mode(self, mode):
         """
