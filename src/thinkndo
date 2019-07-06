@@ -92,10 +92,10 @@ quick_icon_map = {
     "ph ": "phone.png",
 }
 
-MODE_NORMAL=0
-MODE_SELECT=1
-MODE_MARK=2
-MODE_MARK_GO=3
+MODE_NORMAL = 0
+MODE_SELECT = 1
+MODE_MARK = 2
+MODE_MARK_GO = 3
 
 class Node:
     """
