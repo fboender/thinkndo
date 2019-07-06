@@ -97,6 +97,8 @@ MODE_SELECT = 1
 MODE_MARK = 2
 MODE_MARK_GO = 3
 
+ICON_PATH = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "icons")
+
 class Node:
     """
     Nodes represent a single leaf in the outline tree.
@@ -168,7 +170,7 @@ class Node:
         """
         Convert this Node to a QStandardItem.
         """
-        icon = QIcon("icons/{}".format(self.get_icon()))
+        icon = QIcon(os.path.join(ICON_PATH, self.get_icon()))
         item = QStandardItem(icon, self.title)
         item.setData(self)
         return item
@@ -195,7 +197,7 @@ class GUI:
 
         # Main window
         self.win = QMainWindow()
-        self.win.setWindowIcon(QIcon("thinkndo.png"))
+        self.win.setWindowIcon(QIcon(os.path.join(ICON_PATH, "thinkndo.png")))
         self.win.setWindowTitle("Think'n'Do")
         geometry = self.settings.value("geometry")
         if geometry is not None:
@@ -458,7 +460,7 @@ class GUI:
                 cur["node"].icon = quick_icon_map[key]
                 cur["node"].title = new_text
                 item.setText(new_text)
-                item.setIcon(QIcon("icons/" + quick_icon_map[key]))
+                item.setIcon(QIcon(os.path.join(ICON_PATH, quick_icon_map[key])))
                 break
 
         self.save(self.path)
@@ -678,7 +680,7 @@ class GUI:
         sel = self.get_sel()
         for n in sel:
             n["node"].checked = not n["node"].checked
-            n["item"].setIcon(QIcon("icons/" + n["node"].get_icon()))
+            n["item"].setIcon(QIcon(os.path.join(ICON_PATH, n["node"].get_icon())))
 
         self.set_mode(MODE_NORMAL)
         self.save(self.path)
