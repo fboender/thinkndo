@@ -5,6 +5,14 @@ A hierarchical outliner and todo manager.
 
 ![](https://raw.githubusercontent.com/fboender/thinkndo/master/screenshot.png)
 
+## Installation
+
+    sudo apt install python3-pyqt5
+    git clone git@github.com:fboender/thinkndo.git
+    cd thinkndo
+    sudo cp -ar src /usr/local/lib/thinkndo
+    sudo ln -s /usr/local/lib/thinkndo/thinkndo /usr/local/bin/thinkndo
+
 ## Keybindings
 
 Thinkndo uses Vi-like keybindings:
