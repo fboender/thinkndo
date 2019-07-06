@@ -17,6 +17,8 @@ Thinkndo uses Vi-like keybindings:
 * `l`: Go down the tree or add a new item under current item
 * `/`: Search
 * `n`: Jump to next search match
+* `m[a-zA-Z]`: Set mark
+* ``[a-zA-Z]`: Jump to mark
 
 ### Editing
 

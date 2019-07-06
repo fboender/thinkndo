@@ -9,6 +9,7 @@ import json
 import logging
 import copy
 import uuid
+import string
 from pathlib import Path
 from PyQt5.Qt import *
 from PyQt5 import QtCore
@@ -51,6 +52,7 @@ keypress_items = [
     {"key": Qt.Key_K, "event": "cursor_up"},
     {"key": Qt.Key_L, "event": "cursor_right"},
     {"key": Qt.Key_N, "event": "search_next"},
+    {"key": Qt.Key_M, "event": "mark_set"},
     {"key": Qt.Key_O, "event": "insert_above", "modifiers": Qt.ShiftModifier},
     {"key": Qt.Key_O, "event": "insert_below"},
     {"key": Qt.Key_P, "event": "paste_above", "modifiers": Qt.ShiftModifier},
@@ -60,6 +62,7 @@ keypress_items = [
     {"key": Qt.Key_V, "event": "toggle_mode_select"},
     {"key": Qt.Key_X, "event": "toggle_done"},
     {"key": Qt.Key_Z, "event": "dump"},
+    {"key": Qt.Key_QuoteLeft, "event": "mark_go"},
     {"key": Qt.Key_Escape, "event": "escape"},
     {"key": Qt.Key_Slash, "event": "search"},
     {"key": Qt.Key_Space, "event": "select"},
@@ -91,6 +94,8 @@ quick_icon_map = {
 
 MODE_NORMAL=0
 MODE_SELECT=1
+MODE_MARK=2
+MODE_MARK_GO=3
 
 class Node:
     """
@@ -186,6 +191,7 @@ class GUI:
         self.mode_select_cursor = None
         self.del_buf = None
         self.search_results = None
+        self.marks = {}
 
         # Main window
         self.win = QMainWindow()
@@ -235,6 +241,7 @@ class GUI:
             tnd = json.load(f)
 
         self.cursor = tnd.get("cursor", None)
+        self.marks = tnd.get("marks", {})
         self.deserialize(tnd["nodes"], self.node_root)
 
     def save(self, path):
@@ -244,6 +251,7 @@ class GUI:
         raw_nodes = self.serialize(self.node_root)
         tnd = {
             "cursor": self.cursor,
+            "marks": self.marks,
             "nodes": raw_nodes
         }
 
@@ -310,6 +318,24 @@ class GUI:
             nodes.append(self.get(index))
         return nodes
 
+    def get_uniq_id(self, uniq_id, parent=None):
+        """
+        Find an item in the tree by its Node.uniq_id
+        """
+        if parent is None:
+            parent = self.node_root
+
+        for i in range(0, parent.rowCount()):
+            item = parent.child(i)
+            node = item.data()
+            if node.uniq_id == uniq_id:
+                return item
+            ret = self.get_uniq_id(uniq_id, item)
+            if ret is not None:
+                return ret
+
+        return None
+
     def close(self):
         self.save(self.path)
         self.settings.setValue("geometry", self.win.saveGeometry())
@@ -346,6 +372,21 @@ class GUI:
         """
         Handle key press events. Looks in `keypress_items` for actions.
         """
+        if self.mode == MODE_MARK:
+            letter = keypress.text()
+            if letter != "" and letter in string.ascii_letters:
+                self.set_mark(letter)
+                return
+            elif keypress.key() != Qt.Key_Escape:
+                return
+        elif self.mode == MODE_MARK_GO:
+            letter = keypress.text()
+            if letter != "" and letter in string.ascii_letters:
+                self.go_mark(letter)
+                return
+            elif keypress.key() != Qt.Key_Escape:
+                return
+
         for keypress_item in keypress_items:
             if (
                 keypress.key() == keypress_item["key"] and
@@ -690,6 +731,27 @@ class GUI:
         self.search_results.append(result)
         new_index = self.node_model.indexFromItem(result)
         self.node_view.setCurrentIndex(new_index)
+
+    def _act_mark_set(self):
+        self.set_mode(MODE_MARK)
+
+    def set_mark(self, letter):
+        cur = self.get()
+        self.marks[letter] = cur["node"].uniq_id
+        self.set_mode(MODE_NORMAL)
+
+    def go_mark(self, letter):
+        mark_uniq_id = self.marks.get(letter, None)
+        if mark_uniq_id is not None:
+            item = self.get_uniq_id(mark_uniq_id)
+            if item is not None:
+                new_index = self.node_model.indexFromItem(item)
+                self.node_view.setCurrentIndex(new_index)
+
+        self.set_mode(MODE_NORMAL)
+
+    def _act_mark_go(self):
+        self.set_mode(MODE_MARK_GO)
 
     def set_mode(self, mode):
         """
