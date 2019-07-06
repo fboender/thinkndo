@@ -14,7 +14,7 @@ from pathlib import Path
 from PyQt5.Qt import *
 from PyQt5 import QtCore
 
-app_name = "doen"
+app_name = "thinkdo"
 
 start_tree = {
     "cursor": "0d1fb54fd3194007835202d076d81e59",
