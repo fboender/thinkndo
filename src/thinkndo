@@ -185,8 +185,9 @@ class GUI:
     """
     Main GUI class.
     """
-    def __init__(self, path):
+    def __init__(self, path, cursor_start=None):
         self.path = path
+        self.cursor_start = cursor_start
         self.settings = QSettings("electricmonk", app_name)
         self.cursor = None
         self.mode = MODE_NORMAL
@@ -231,6 +232,10 @@ class GUI:
         self.node_view.collapsed.connect(self._ev_collapsed)
         self.node_view.selectionModel().currentChanged.connect(self._ev_current_changed)
         self.node_model.itemChanged.connect(self._ev_item_changed)
+
+        # Jump to given cursor
+        if self.cursor_start is not None:
+            self.go_uniq_id(self.cursor_start)
 
         self.win.setCentralWidget(self.node_view)
         self.win.show()
@@ -734,6 +739,15 @@ class GUI:
         new_index = self.node_model.indexFromItem(result)
         self.node_view.setCurrentIndex(new_index)
 
+    def go_uniq_id(self, uniq_id):
+        """
+        Set the cursor to the QStandardItem with uniq_id.
+        """
+        item = self.get_uniq_id(uniq_id)
+        if item is not None:
+            new_index = self.node_model.indexFromItem(item)
+            self.node_view.setCurrentIndex(new_index)
+
     def _act_mark_set(self):
         self.set_mode(MODE_MARK)
 
@@ -745,10 +759,7 @@ class GUI:
     def go_mark(self, letter):
         mark_uniq_id = self.marks.get(letter, None)
         if mark_uniq_id is not None:
-            item = self.get_uniq_id(mark_uniq_id)
-            if item is not None:
-                new_index = self.node_model.indexFromItem(item)
-                self.node_view.setCurrentIndex(new_index)
+            self.go_uniq_id(mark_uniq_id)
 
         self.set_mode(MODE_NORMAL)
 
@@ -795,6 +806,11 @@ if __name__ == "__main__":
     parser.add_argument("--debug",
                         dest='debug',
                         action="store_true")
+    parser.add_argument("-c", "--cursor",
+                        metavar='ID',
+                        type=str,
+                        dest='cursor',
+                        help="Jump cursor to item ID")
     parser.add_argument(metavar='PATH',
                         dest='path',
                         type=str)
@@ -825,7 +841,7 @@ if __name__ == "__main__":
 
     # GUI
     app = QApplication([])
-    gui = GUI(args.path)
+    gui = GUI(args.path, args.cursor)
     app.exec_()
 
     # Unlock
