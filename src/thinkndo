@@ -40,22 +40,24 @@ start_tree = {
     ]
 }
 
+# Order matters. Key with the most modifiers should be above those with less.
 keypress_items = [
     {"key": Qt.Key_A, "event": "edit"},
-    {"key": Qt.Key_C, "event": "toggle_auto_collapse", "modifiers": Qt.ShiftModifier},
+    {"key": Qt.Key_C, "event": "toggle_auto_collapse", "modifiers": int(Qt.ShiftModifier)},
     {"key": Qt.Key_C, "event": "toggle_expanded"},
     {"key": Qt.Key_D, "event": "delete"},
     {"key": Qt.Key_H, "event": "cursor_left"},
-    {"key": Qt.Key_J, "event": "move_down", "modifiers": Qt.ShiftModifier},
+    {"key": Qt.Key_J, "event": "move_down", "modifiers": int(Qt.ShiftModifier)},
     {"key": Qt.Key_J, "event": "cursor_down"},
-    {"key": Qt.Key_K, "event": "move_up", "modifiers": Qt.ShiftModifier},
+    {"key": Qt.Key_K, "event": "move_up", "modifiers": int(Qt.ShiftModifier)},
     {"key": Qt.Key_K, "event": "cursor_up"},
     {"key": Qt.Key_L, "event": "cursor_right"},
     {"key": Qt.Key_N, "event": "search_next"},
     {"key": Qt.Key_M, "event": "mark_set"},
-    {"key": Qt.Key_O, "event": "insert_above", "modifiers": Qt.ShiftModifier},
+    {"key": Qt.Key_O, "event": "insert_above", "modifiers": int(Qt.ShiftModifier)},
     {"key": Qt.Key_O, "event": "insert_below"},
-    {"key": Qt.Key_P, "event": "paste_above", "modifiers": Qt.ShiftModifier},
+    {"key": Qt.Key_P, "event": "paste_into", "modifiers": int(Qt.ShiftModifier | Qt.ControlModifier)},
+    {"key": Qt.Key_P, "event": "paste_above", "modifiers": int(Qt.ShiftModifier)},
     {"key": Qt.Key_P, "event": "paste_below"},
     {"key": Qt.Key_Q, "event": "close"},
     {"key": Qt.Key_S, "event": "save"},
@@ -502,6 +504,17 @@ class GUI:
         # Go back to normal mode and save
         self.set_mode(MODE_NORMAL)
         self.save(self.path)
+
+    def _act_paste_into(self):
+        if self.del_buf is None:
+            return
+
+        cur = self.get()
+
+        for row in self.del_buf:
+            node = Node.from_dict(row)
+            new_item = self.insert_node(node, cur["item"], 0)
+            self.deserialize(row["children"], new_item)
 
     def _act_paste_above(self):
         if self.del_buf is None:
