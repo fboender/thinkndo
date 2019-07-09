@@ -1,5 +1,6 @@
 {
-  "cursor": "707ca5efb4734505932160c5053321a1",
+  "cursor": "ee805f7d0aaa4a5dbc19b6423e6edbf6",
+  "marks": {},
   "nodes": [
     {
       "uniq_id": "c15727e0a90b4150ac0803a08c2130c2",
@@ -321,6 +322,15 @@
               "uniq_id": "a19f1c1b5c45436389a6179567a9ba0b",
               "title": "\"!! REALLY careful with this one\"",
               "icon": "exclamation.png",
+              "checked": false,
+              "expanded": true,
+              "auto_collapse": false,
+              "children": []
+            },
+            {
+              "uniq_id": "ee805f7d0aaa4a5dbc19b6423e6edbf6",
+              "title": "\">< Waiting\"",
+              "icon": "hourglass.png",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
