@@ -47,8 +47,10 @@ keypress_items = [
     {"key": Qt.Key_C, "event": "toggle_expanded"},
     {"key": Qt.Key_D, "event": "delete"},
     {"key": Qt.Key_H, "event": "cursor_left"},
+    {"key": Qt.Key_J, "event": "move_down_group", "modifiers": int(Qt.ShiftModifier | Qt.ControlModifier)},
     {"key": Qt.Key_J, "event": "move_down", "modifiers": int(Qt.ShiftModifier)},
     {"key": Qt.Key_J, "event": "cursor_down"},
+    {"key": Qt.Key_K, "event": "move_up_group", "modifiers": int(Qt.ShiftModifier | Qt.ControlModifier)},
     {"key": Qt.Key_K, "event": "move_up", "modifiers": int(Qt.ShiftModifier)},
     {"key": Qt.Key_K, "event": "cursor_up"},
     {"key": Qt.Key_L, "event": "cursor_right"},
@@ -611,6 +613,69 @@ class GUI:
         self.node_view.setCurrentIndex(new_index)
         cur_index = self.node_view.currentIndex()
         cur_item = self.node_model.itemFromIndex(cur_index)
+
+    def _act_move_up_group(self):
+        """
+        Move the current item up to the first item
+        that matches its icon on checked state.
+        """
+        cur = self.get()
+        children = self.serialize(cur["item"])
+        cur_row = cur["item"].row()
+        cur_index_parent = cur["index"].parent()
+
+        inspect_row = cur_row - 1
+        match_found = False
+        while inspect_row > -1:
+            inspect = cur["parent_item"].child(inspect_row).data()
+
+            if cur["node"].checked is True:
+                if inspect.checked is True:
+                    match_found = True
+                    break
+            else:
+                if cur["node"].icon == inspect.icon:
+                    match_found = True
+                    break
+            inspect_row -= 1
+
+        self.node_model.removeRows(cur_row, 1, cur_index_parent)
+        if match_found is True:
+            new_item = self.insert_node(cur["node"], cur["parent_item"], inspect_row + 1)
+        else:
+            new_item = self.insert_node(cur["node"], cur["parent_item"], 0)
+        self.deserialize(children, new_item)
+        new_index = self.node_model.indexFromItem(new_item)
+        self.node_view.setCurrentIndex(new_index)
+
+
+    def _act_move_down_group(self):
+        """
+        Move the current item down to the first item
+        that matches its icon on checked state.
+        """
+        cur = self.get()
+        children = self.serialize(cur["item"])
+        cur_row = cur["item"].row()
+        cur_index_parent = cur["index"].parent()
+
+        inspect_row = cur_row + 1
+        while inspect_row != cur["parent_item"].rowCount():
+            inspect = cur["parent_item"].child(inspect_row).data()
+
+            if cur["node"].checked is True:
+                if inspect.checked is True:
+                    break
+            else:
+                if cur["node"].icon == inspect.icon:
+                    break
+            inspect_row += 1
+
+        self.node_model.removeRows(cur_row, 1, cur_index_parent)
+        new_item = self.insert_node(cur["node"], cur["parent_item"], inspect_row - 1)
+        self.deserialize(children, new_item)
+        new_index = self.node_model.indexFromItem(new_item)
+        self.node_view.setCurrentIndex(new_index)
 
     def _act_move_down(self):
         cur = self.get()
