@@ -467,6 +467,7 @@ class GUI:
                 new_text = text[len(key):]
                 cur["node"].icon = quick_icon_map[key]
                 cur["node"].title = new_text
+                cur["node"].checked = False
                 item.setText(new_text)
                 item.setIcon(QIcon(os.path.join(ICON_PATH, quick_icon_map[key])))
                 break
