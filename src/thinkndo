@@ -88,6 +88,8 @@ quick_icon_map = {
     "*p ": "bullet_purple.png",
     ": ": "clock.png",
     ">< ": "hourglass.png",
+    "<- ": "recur.png",
+    ".. ": "progressbar.png",
     "^ ": "note.png",
     "!! ": "exclamation.png",
     "[] ": "check_box_uncheck.png",
