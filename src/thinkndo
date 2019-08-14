@@ -248,6 +248,12 @@ class GUI:
         self.win.setCentralWidget(self.node_view)
         self.win.show()
 
+    def close(self):
+        self.save(self.path)
+        self.settings.setValue("geometry", self.win.saveGeometry())
+        self.settings.sync()
+        QCoreApplication.quit()
+
     def load(self, path):
         """
         Load a tree from a JSON file.
@@ -272,6 +278,32 @@ class GUI:
 
         with open(path, "w") as f:
             json.dump(tnd, f, indent=2)
+
+    def serialize(self, parent):
+        """
+        Serialize the QStandardItem `parent`, including its children to a
+        Python dicts
+        """
+        raw_nodes = []
+        for i in range(0, parent.rowCount()):
+            item = parent.child(i)
+            node = item.data()
+            raw_node = node.to_dict()
+            raw_nodes.append(raw_node)
+            raw_node["children"] = self.serialize(item)
+
+        return raw_nodes
+
+    def deserialize(self, l, parent, row=None):
+        """
+        Deserialize dicts in list `l` into QStandardItemModels under `parent`.
+        The dicts in `l` are converted to instances of Node() which are set as
+        data on each of the items in the tree.
+        """
+        for child in l:
+            node = Node.from_dict(child)
+            tree = self.insert_node(node, parent)
+            self.deserialize(child["children"], tree)
 
     def insert_node(self, node, parent, row=None):
         """
@@ -351,37 +383,63 @@ class GUI:
 
         return None
 
-    def close(self):
-        self.save(self.path)
-        self.settings.setValue("geometry", self.win.saveGeometry())
-        self.settings.sync()
-        QCoreApplication.quit()
+    def closeEditor(self, editor, hint):
+        self.orig_node_view_closeEditor(editor, hint)
+        if editor.text() == "":
+            cur = self.get()
+            self.node_model.removeRows(cur["index"].row(), 1, cur["index"].parent())
 
-    def serialize(self, parent):
+    def search(self, text, parent=None):
         """
-        Serialize the QStandardItem `parent`, including its children to a
-        Python dicts
+        Show a text-entry dialog window and search for the entered text.
         """
-        raw_nodes = []
+        if parent is None:
+            parent = self.node_model.invisibleRootItem()
+
+        results = []
         for i in range(0, parent.rowCount()):
-            item = parent.child(i)
-            node = item.data()
-            raw_node = node.to_dict()
-            raw_nodes.append(raw_node)
-            raw_node["children"] = self.serialize(item)
+            child = parent.child(i)
+            node = child.data()
+            if text.lower() in node.title.lower():
+                results.append(child)
+            results.extend(self.search(text, child))
+        return results
 
-        return raw_nodes
+    def go_uniq_id(self, uniq_id):
+        """
+        Set the cursor to the QStandardItem with uniq_id.
+        """
+        item = self.get_uniq_id(uniq_id)
+        if item is not None:
+            new_index = self.node_model.indexFromItem(item)
+            self.node_view.setCurrentIndex(new_index)
 
-    def deserialize(self, l, parent, row=None):
+    def mark_set(self, letter):
+        cur = self.get()
+        self.marks[letter] = cur["node"].uniq_id
+        self.set_mode(MODE_NORMAL)
+
+    def mark_go(self, letter):
+        mark_uniq_id = self.marks.get(letter, None)
+        if mark_uniq_id is not None:
+            self.go_uniq_id(mark_uniq_id)
+
+        self.set_mode(MODE_NORMAL)
+
+    def set_mode(self, mode):
         """
-        Deserialize dicts in list `l` into QStandardItemModels under `parent`.
-        The dicts in `l` are converted to instances of Node() which are set as
-        data on each of the items in the tree.
+        Switch modes.
         """
-        for child in l:
-            node = Node.from_dict(child)
-            tree = self.insert_node(node, parent)
-            self.deserialize(child["children"], tree)
+        self.mode = mode
+
+        if mode == MODE_NORMAL:
+            # Reset everything to normal mode
+            cur = self.get()
+            self.mode = MODE_NORMAL
+            sel_model = self.node_view.selectionModel()
+            self.node_view.setCurrentIndex(cur["index"])
+            sel_model.select(cur["index"], QItemSelectionModel.Select)
+            self.mode_select_cursor = None
 
     def keyPressEvent(self, keypress):
         """
@@ -390,14 +448,14 @@ class GUI:
         if self.mode == MODE_MARK:
             letter = keypress.text()
             if letter != "" and letter in string.ascii_letters:
-                self.set_mark(letter)
+                self.mark_set(letter)
                 return
             elif keypress.key() != Qt.Key_Escape:
                 return
         elif self.mode == MODE_MARK_GO:
             letter = keypress.text()
             if letter != "" and letter in string.ascii_letters:
-                self.go_mark(letter)
+                self.mark_go(letter)
                 return
             elif keypress.key() != Qt.Key_Escape:
                 return
@@ -479,6 +537,77 @@ class GUI:
 
         self.save(self.path)
 
+    def _act_close(self, event=None):
+        """
+        Catch the user pressing the [X] button and cleanly close the app.
+        """
+        self.close()
+
+    def _act_cursor_up(self):
+        if self.mode == MODE_NORMAL:
+            # Move cursor up
+            cur = self.get()
+            new_index = cur["index"].siblingAtRow(cur["index"].row() - 1)
+            if new_index.row() != -1:
+                self.node_view.setCurrentIndex(new_index)
+        elif self.mode == MODE_SELECT:
+            # Grow selection down
+            self.mode_select_cursor = self.get(self.mode_select_cursor)
+            cursor = self.mode_select_cursor
+            if cursor is None:
+                return
+            next_index = cursor["index"].siblingAtRow(cursor["index"].row() - 1)
+            sel_model = self.node_view.selectionModel()
+            sel_model.select(next_index, QItemSelectionModel.Select)
+            self.mode_select_cursor  = next_index
+
+    def _act_cursor_down(self):
+        if self.mode == MODE_NORMAL:
+            # Move cursor down
+            cur = self.get()
+            new_index = cur["index"].siblingAtRow(cur["index"].row() + 1)
+            if new_index.row() != -1:
+                self.node_view.setCurrentIndex(new_index)
+        elif self.mode == MODE_SELECT:
+            # Grow selection down
+            self.mode_select_cursor = self.get(self.mode_select_cursor)
+            cursor = self.mode_select_cursor
+            if cursor is None:
+                return
+            next_index = cursor["index"].siblingAtRow(cursor["index"].row() + 1)
+            sel_model = self.node_view.selectionModel()
+            sel_model.select(next_index, QItemSelectionModel.Select)
+            self.mode_select_cursor  = next_index
+
+    def _act_cursor_left(self):
+        cur = self.get()
+        new_index = self.node_model.indexFromItem(cur["parent_item"])
+
+        # Focus
+        if cur["item"].parent() is not None:
+            self.node_view.setCurrentIndex(new_index)
+
+    def _act_cursor_right(self):
+        cur = self.get()
+        has_children = self.node_model.hasChildren(cur["index"])
+
+        if not has_children:
+            # Add new child
+            new_node = cur["node"].copy()
+            new_node.title = ""
+            new_item = self.insert_node(new_node, cur["item"])
+            new_index = self.node_model.indexFromItem(new_item)
+
+            # Edit the new node
+            self.node_view.setCurrentIndex(new_index)
+            self.node_view.edit(new_index)
+        else:
+            # Move into subtree
+            self.node_view.setExpanded(cur["index"], True)
+            new_index = self.node_view.moveCursor(QAbstractItemView.MoveRight,
+                                                  Qt.NoModifier)
+            self.node_view.setCurrentIndex(new_index)
+
     def _act_dump(self):
         print("cur")
         print(70 * "-")
@@ -512,61 +641,22 @@ class GUI:
         self.set_mode(MODE_NORMAL)
         self.save(self.path)
 
-    def _act_paste_into(self):
-        if self.del_buf is None:
-            return
-
-        cur = self.get()
-
-        for row in self.del_buf:
-            node = Node.from_dict(row)
-            new_item = self.insert_node(node, cur["item"], 0)
-            self.deserialize(row["children"], new_item)
-
-    def _act_paste_above(self):
-        if self.del_buf is None:
-            return
-
-        cur = self.get()
-        cur_row = cur["item"].row()
-
-        for row in self.del_buf:
-            node = Node.from_dict(row)
-            new_item = self.insert_node(node, cur["parent_item"], cur_row)
-            self.deserialize(row["children"], new_item)
-
-    def _act_paste_below(self):
-        if self.del_buf is None:
-            return
-
-        cur = self.get()
-        cur_row = cur["item"].row()
-
-        for row in self.del_buf:
-            node = Node.from_dict(row)
-            new_item = self.insert_node(node, cur["parent_item"], cur_row + 1)
-            self.deserialize(row["children"], new_item)
-
-    def _act_toggle_auto_collapse(self):
-        cur = self.get()
-        cur["node"].auto_collapse = not cur["node"].auto_collapse
-        if cur["node"].auto_collapse is True:
-            self.node_view.setExpanded(cur["index"], False)
-
-    def _act_toggle_expanded(self):
-        cur = self.get()
-        inv_expanded = not self.node_view.isExpanded(cur["index"])
-        self.node_view.setExpanded(cur["index"], inv_expanded)
-
     def _act_edit(self):
         cur = self.get()
         self.node_view.edit(cur["index"])
 
-    def closeEditor(self, editor, hint):
-        self.orig_node_view_closeEditor(editor, hint)
-        if editor.text() == "":
-            cur = self.get()
-            self.node_model.removeRows(cur["index"].row(), 1, cur["index"].parent())
+    def _act_escape(self):
+        """
+        Handle the escape key by switching back to normal mode or quiting the
+        application.
+        """
+        if self.mode != MODE_NORMAL:
+            self.set_mode(MODE_NORMAL)
+        else:
+            self._act_close()
+
+    def _act_export(self):
+        print('export')
 
     def _act_insert_above(self):
         cur = self.get()
@@ -598,6 +688,12 @@ class GUI:
         # Edit the new node
         self.node_view.setCurrentIndex(new_index)
         self.node_view.edit(new_index)
+
+    def _act_mark_set(self):
+        self.set_mode(MODE_MARK)
+
+    def _act_mark_go(self):
+        self.set_mode(MODE_MARK_GO)
 
     def _act_move_up(self):
         cur = self.get()
@@ -696,108 +792,40 @@ class GUI:
         new_index = self.node_model.indexFromItem(new_item)
         self.node_view.setCurrentIndex(new_index)
 
-    def _act_cursor_up(self):
-        if self.mode == MODE_NORMAL:
-            # Move cursor up
-            cur = self.get()
-            new_index = cur["index"].siblingAtRow(cur["index"].row() - 1)
-            if new_index.row() != -1:
-                self.node_view.setCurrentIndex(new_index)
-        elif self.mode == MODE_SELECT:
-            # Grow selection down
-            self.mode_select_cursor = self.get(self.mode_select_cursor)
-            cursor = self.mode_select_cursor
-            if cursor is None:
-                return
-            next_index = cursor["index"].siblingAtRow(cursor["index"].row() - 1)
-            sel_model = self.node_view.selectionModel()
-            sel_model.select(next_index, QItemSelectionModel.Select)
-            self.mode_select_cursor  = next_index
+    def _act_paste_above(self):
+        if self.del_buf is None:
+            return
 
-    def _act_cursor_down(self):
-        if self.mode == MODE_NORMAL:
-            # Move cursor down
-            cur = self.get()
-            new_index = cur["index"].siblingAtRow(cur["index"].row() + 1)
-            if new_index.row() != -1:
-                self.node_view.setCurrentIndex(new_index)
-        elif self.mode == MODE_SELECT:
-            # Grow selection down
-            self.mode_select_cursor = self.get(self.mode_select_cursor)
-            cursor = self.mode_select_cursor
-            if cursor is None:
-                return
-            next_index = cursor["index"].siblingAtRow(cursor["index"].row() + 1)
-            sel_model = self.node_view.selectionModel()
-            sel_model.select(next_index, QItemSelectionModel.Select)
-            self.mode_select_cursor  = next_index
-
-    def _act_cursor_left(self):
         cur = self.get()
-        new_index = self.node_model.indexFromItem(cur["parent_item"])
+        cur_row = cur["item"].row()
 
-        # Focus
-        if cur["item"].parent() is not None:
-            self.node_view.setCurrentIndex(new_index)
+        for row in self.del_buf:
+            node = Node.from_dict(row)
+            new_item = self.insert_node(node, cur["parent_item"], cur_row)
+            self.deserialize(row["children"], new_item)
 
-    def _act_cursor_right(self):
+    def _act_paste_below(self):
+        if self.del_buf is None:
+            return
+
         cur = self.get()
-        has_children = self.node_model.hasChildren(cur["index"])
+        cur_row = cur["item"].row()
 
-        if not has_children:
-            # Add new child
-            new_node = cur["node"].copy()
-            new_node.title = ""
-            new_item = self.insert_node(new_node, cur["item"])
-            new_index = self.node_model.indexFromItem(new_item)
+        for row in self.del_buf:
+            node = Node.from_dict(row)
+            new_item = self.insert_node(node, cur["parent_item"], cur_row + 1)
+            self.deserialize(row["children"], new_item)
 
-            # Edit the new node
-            self.node_view.setCurrentIndex(new_index)
-            self.node_view.edit(new_index)
-        else:
-            # Move into subtree
-            self.node_view.setExpanded(cur["index"], True)
-            new_index = self.node_view.moveCursor(QAbstractItemView.MoveRight,
-                                                  Qt.NoModifier)
-            self.node_view.setCurrentIndex(new_index)
+    def _act_paste_into(self):
+        if self.del_buf is None:
+            return
 
-    def _act_toggle_done(self):
-        """
-        Toggle t he current node as "Done".
-        """
-        sel = self.get_sel()
-        for n in sel:
-            n["node"].checked = not n["node"].checked
-            n["item"].setIcon(QIcon(os.path.join(ICON_PATH, n["node"].get_icon())))
+        cur = self.get()
 
-        self.set_mode(MODE_NORMAL)
-        self.save(self.path)
-
-    def _act_escape(self):
-        """
-        Handle the escape key by switching back to normal mode or quiting the
-        application.
-        """
-        if self.mode != MODE_NORMAL:
-            self.set_mode(MODE_NORMAL)
-        else:
-            self._act_close()
-
-    def search(self, text, parent=None):
-        """
-        Show a text-entry dialog window and search for the entered text.
-        """
-        if parent is None:
-            parent = self.node_model.invisibleRootItem()
-
-        results = []
-        for i in range(0, parent.rowCount()):
-            child = parent.child(i)
-            node = child.data()
-            if text.lower() in node.title.lower():
-                results.append(child)
-            results.extend(self.search(text, child))
-        return results
+        for row in self.del_buf:
+            node = Node.from_dict(row)
+            new_item = self.insert_node(node, cur["item"], 0)
+            self.deserialize(row["children"], new_item)
 
     def _act_search(self):
         """
@@ -822,54 +850,31 @@ class GUI:
         new_index = self.node_model.indexFromItem(result)
         self.node_view.setCurrentIndex(new_index)
 
-    def go_uniq_id(self, uniq_id):
-        """
-        Set the cursor to the QStandardItem with uniq_id.
-        """
-        item = self.get_uniq_id(uniq_id)
-        if item is not None:
-            new_index = self.node_model.indexFromItem(item)
-            self.node_view.setCurrentIndex(new_index)
+    def _act_save(self):
+        self.save(self.path)
 
-    def _act_mark_set(self):
-        self.set_mode(MODE_MARK)
-
-    def set_mark(self, letter):
+    def _act_toggle_auto_collapse(self):
         cur = self.get()
-        self.marks[letter] = cur["node"].uniq_id
+        cur["node"].auto_collapse = not cur["node"].auto_collapse
+        if cur["node"].auto_collapse is True:
+            self.node_view.setExpanded(cur["index"], False)
+
+    def _act_toggle_done(self):
+        """
+        Toggle t he current node as "Done".
+        """
+        sel = self.get_sel()
+        for n in sel:
+            n["node"].checked = not n["node"].checked
+            n["item"].setIcon(QIcon(os.path.join(ICON_PATH, n["node"].get_icon())))
+
         self.set_mode(MODE_NORMAL)
+        self.save(self.path)
 
-    def go_mark(self, letter):
-        mark_uniq_id = self.marks.get(letter, None)
-        if mark_uniq_id is not None:
-            self.go_uniq_id(mark_uniq_id)
-
-        self.set_mode(MODE_NORMAL)
-
-    def _act_mark_go(self):
-        self.set_mode(MODE_MARK_GO)
-
-    def set_mode(self, mode):
-        """
-        Switch modes.
-        """
-        self.mode = mode
-
-        if mode == MODE_NORMAL:
-            # Reset everything to normal mode
-            cur = self.get()
-            self.mode = MODE_NORMAL
-            sel_model = self.node_view.selectionModel()
-            self.node_view.setCurrentIndex(cur["index"])
-            sel_model.select(cur["index"], QItemSelectionModel.Select)
-            self.mode_select_cursor = None
-
-
-    def _act_close(self, event=None):
-        """
-        Catch the user pressing the [X] button and cleanly close the app.
-        """
-        self.close()
+    def _act_toggle_expanded(self):
+        cur = self.get()
+        inv_expanded = not self.node_view.isExpanded(cur["index"])
+        self.node_view.setExpanded(cur["index"], inv_expanded)
 
     def _act_toggle_mode_select(self):
         """
@@ -879,9 +884,6 @@ class GUI:
             self.set_mode(MODE_SELECT)
         else:
             self.set_mode(MODE_NORMAL)
-
-    def _act_save(self):
-        self.save(self.path)
 
 
 if __name__ == "__main__":
