@@ -42,34 +42,35 @@ start_tree = {
 
 # Order matters. Key with the most modifiers should be above those with less.
 keypress_items = [
-    {"key": Qt.Key_A, "event": "edit"},
-    {"key": Qt.Key_C, "event": "toggle_auto_collapse", "modifiers": int(Qt.ShiftModifier)},
-    {"key": Qt.Key_C, "event": "toggle_expanded"},
-    {"key": Qt.Key_D, "event": "delete"},
-    {"key": Qt.Key_H, "event": "cursor_left"},
-    {"key": Qt.Key_J, "event": "move_down_group", "modifiers": int(Qt.ShiftModifier | Qt.ControlModifier)},
-    {"key": Qt.Key_J, "event": "move_down", "modifiers": int(Qt.ShiftModifier)},
-    {"key": Qt.Key_J, "event": "cursor_down"},
-    {"key": Qt.Key_K, "event": "move_up_group", "modifiers": int(Qt.ShiftModifier | Qt.ControlModifier)},
-    {"key": Qt.Key_K, "event": "move_up", "modifiers": int(Qt.ShiftModifier)},
-    {"key": Qt.Key_K, "event": "cursor_up"},
-    {"key": Qt.Key_L, "event": "cursor_right"},
-    {"key": Qt.Key_N, "event": "search_next"},
-    {"key": Qt.Key_M, "event": "mark_set"},
-    {"key": Qt.Key_O, "event": "insert_above", "modifiers": int(Qt.ShiftModifier)},
-    {"key": Qt.Key_O, "event": "insert_below"},
-    {"key": Qt.Key_P, "event": "paste_into", "modifiers": int(Qt.ShiftModifier | Qt.ControlModifier)},
-    {"key": Qt.Key_P, "event": "paste_above", "modifiers": int(Qt.ShiftModifier)},
-    {"key": Qt.Key_P, "event": "paste_below"},
-    {"key": Qt.Key_Q, "event": "close"},
-    {"key": Qt.Key_S, "event": "save"},
-    {"key": Qt.Key_V, "event": "toggle_mode_select"},
-    {"key": Qt.Key_X, "event": "toggle_done"},
-    {"key": Qt.Key_Z, "event": "dump"},
-    {"key": Qt.Key_QuoteLeft, "event": "mark_go"},
-    {"key": Qt.Key_Escape, "event": "escape"},
-    {"key": Qt.Key_Slash, "event": "search"},
-    {"key": Qt.Key_Space, "event": "select"},
+    {"key": Qt.Key_A, "action": "edit"},
+    {"key": Qt.Key_C, "action": "toggle_auto_collapse", "modifiers": int(Qt.ShiftModifier)},
+    {"key": Qt.Key_C, "action": "toggle_expanded"},
+    {"key": Qt.Key_D, "action": "delete"},
+    {"key": Qt.Key_E, "action": "export"},
+    {"key": Qt.Key_H, "action": "cursor_left"},
+    {"key": Qt.Key_J, "action": "move_down_group", "modifiers": int(Qt.ShiftModifier | Qt.ControlModifier)},
+    {"key": Qt.Key_J, "action": "move_down", "modifiers": int(Qt.ShiftModifier)},
+    {"key": Qt.Key_J, "action": "cursor_down"},
+    {"key": Qt.Key_K, "action": "move_up_group", "modifiers": int(Qt.ShiftModifier | Qt.ControlModifier)},
+    {"key": Qt.Key_K, "action": "move_up", "modifiers": int(Qt.ShiftModifier)},
+    {"key": Qt.Key_K, "action": "cursor_up"},
+    {"key": Qt.Key_L, "action": "cursor_right"},
+    {"key": Qt.Key_N, "action": "search_next"},
+    {"key": Qt.Key_M, "action": "mark_set"},
+    {"key": Qt.Key_O, "action": "insert_above", "modifiers": int(Qt.ShiftModifier)},
+    {"key": Qt.Key_O, "action": "insert_below"},
+    {"key": Qt.Key_P, "action": "paste_into", "modifiers": int(Qt.ShiftModifier | Qt.ControlModifier)},
+    {"key": Qt.Key_P, "action": "paste_above", "modifiers": int(Qt.ShiftModifier)},
+    {"key": Qt.Key_P, "action": "paste_below"},
+    {"key": Qt.Key_Q, "action": "close"},
+    {"key": Qt.Key_S, "action": "save"},
+    {"key": Qt.Key_V, "action": "toggle_mode_select"},
+    {"key": Qt.Key_X, "action": "toggle_done"},
+    {"key": Qt.Key_Z, "action": "dump"},
+    {"key": Qt.Key_QuoteLeft, "action": "mark_go"},
+    {"key": Qt.Key_Escape, "action": "escape"},
+    {"key": Qt.Key_Slash, "action": "search"},
+    {"key": Qt.Key_Space, "action": "select"},
 ]
 
 quick_icon_map = {
@@ -409,8 +410,8 @@ class GUI:
                     (int(keypress.modifiers()) & keypress_item["modifiers"] == keypress_item["modifiers"])
                 )
                ):
-                event_cb = getattr(self, "_act_{}".format(keypress_item["event"]))
-                event_cb()
+                action_cb = getattr(self, "_act_{}".format(keypress_item["action"]))
+                action_cb()
                 return
         self.orig_node_view_keyPressEvent(keypress)
 
