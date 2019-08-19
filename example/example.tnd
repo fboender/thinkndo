@@ -5,7 +5,7 @@
     {
       "uniq_id": "c15727e0a90b4150ac0803a08c2130c2",
       "title": "Think'N'do demonstration",
-      "icon": "folder.png",
+      "icon": "folder",
       "checked": false,
       "expanded": true,
       "auto_collapse": false,
@@ -13,7 +13,7 @@
         {
           "uniq_id": "f7fc009d010a4d809c494078f2c233b9",
           "title": "Use Think'N'do for",
-          "icon": "information.png",
+          "icon": "information",
           "checked": false,
           "expanded": true,
           "auto_collapse": false,
@@ -21,7 +21,7 @@
             {
               "uniq_id": "e70a0cb360444f3ebaa5dc87eea908e9",
               "title": "Outlining documents and ideas",
-              "icon": "bullet_black.png",
+              "icon": "bullet_black",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -30,7 +30,7 @@
             {
               "uniq_id": "e95ae727b7414e3fba50d5657cbdeb5b",
               "title": "Keeping todo lists",
-              "icon": "bullet_black.png",
+              "icon": "bullet_black",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -39,7 +39,7 @@
             {
               "uniq_id": "0c0d218be96146bbbf3b19ca242060da",
               "title": "Planning projects",
-              "icon": "bullet_black.png",
+              "icon": "bullet_black",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -48,7 +48,7 @@
             {
               "uniq_id": "8b3c61bcb0a14c5aa358b30ce6d27002",
               "title": "Notes",
-              "icon": "bullet_black.png",
+              "icon": "bullet_black",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -59,7 +59,7 @@
         {
           "uniq_id": "59987da224fe4fb7b6df2ecf3bddfa08",
           "title": "Think'N'do uses vi keys",
-          "icon": "information.png",
+          "icon": "information",
           "checked": false,
           "expanded": true,
           "auto_collapse": false,
@@ -67,7 +67,7 @@
             {
               "uniq_id": "71575b2c288a422da341ecabc6248813",
               "title": "Move around with \"h\", \"j\", \"k\" and \"l\".",
-              "icon": "bullet_black.png",
+              "icon": "bullet_black",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -76,7 +76,7 @@
             {
               "uniq_id": "6fcbb016c0d94cd7913bd7557030a6b3",
               "title": "Use \"o\" and \"O\" to insert new items.",
-              "icon": "bullet_black.png",
+              "icon": "bullet_black",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -85,7 +85,7 @@
             {
               "uniq_id": "1cabf64491c14b9389ab97ab9c34cac4",
               "title": "Use \"a\" to edit an item.",
-              "icon": "bullet_black.png",
+              "icon": "bullet_black",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -94,7 +94,7 @@
             {
               "uniq_id": "552b41b7fa444525b6a11ec35b4c1f15",
               "title": "Press \"x\" to mark an item done.",
-              "icon": "bullet_black.png",
+              "icon": "bullet_black",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -103,7 +103,7 @@
             {
               "uniq_id": "8ba522fd90024ff6a575b1f8d521d516",
               "title": "\"shift-k\" moves an item up in the current tree, \"shift-j\" moves it down.",
-              "icon": "bullet_black.png",
+              "icon": "bullet_black",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -112,7 +112,7 @@
             {
               "uniq_id": "4c19eee6d39e42ac8616888b75c37b77",
               "title": "The \"d\" key deletes an item, which can then paste somewhere else with \"p\" (below) and \"P\" (above).",
-              "icon": "bullet_orange.png",
+              "icon": "bullet_orange",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -121,7 +121,7 @@
             {
               "uniq_id": "eeee4f55d64c4fedaca4298979adccf5",
               "title": "The \"c\" key toggles the expansion of an item. This state will be remembered.",
-              "icon": "bullet_black.png",
+              "icon": "bullet_black",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -130,7 +130,7 @@
             {
               "uniq_id": "66c292983a974182bba524a19baa9a3e",
               "title": "Trees can be automatically collapsed when you move out of them using. Toggle this with \"C\".",
-              "icon": "bullet_black.png",
+              "icon": "bullet_black",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -139,7 +139,7 @@
             {
               "uniq_id": "d2c3271863e049e4b9f5bc57919f92fa",
               "title": "Enter visual mode with \"shift-v\" and delete or toggle multiple items.",
-              "icon": "bullet_black.png",
+              "icon": "bullet_black",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -148,7 +148,7 @@
             {
               "uniq_id": "4c55f96869f548689517c4f18a28caca",
               "title": "Use '/' to search and 'n' to jump to the next search result.",
-              "icon": "bullet_black.png",
+              "icon": "bullet_black",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -157,7 +157,7 @@
             {
               "uniq_id": "741c722d38ef4bdd9dcc756e0c66346f",
               "title": "For more keys, see the README.md",
-              "icon": "bullet_black.png",
+              "icon": "bullet_black",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -168,7 +168,7 @@
         {
           "uniq_id": "b74006b1c5f54941b03d970ac4fbae21",
           "title": "Icons can be set by starting an entry with special text",
-          "icon": "information.png",
+          "icon": "information",
           "checked": false,
           "expanded": true,
           "auto_collapse": false,
@@ -176,7 +176,7 @@
             {
               "uniq_id": "1f90a9baef0140dbbf62d9e788250889",
               "title": "\"i Some informational text\"",
-              "icon": "information.png",
+              "icon": "information",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -185,7 +185,7 @@
             {
               "uniq_id": "f3e3e31f0b2c4294b955f7f55b9e6a5f",
               "title": "\"! Careful with this one\"",
-              "icon": "warning.png",
+              "icon": "warning",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -194,7 +194,7 @@
             {
               "uniq_id": "b3e600b7f954445aa8c3c9d4bcd2f2cc",
               "title": "\"+ A new feature\"",
-              "icon": "plus.png",
+              "icon": "plus",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -203,7 +203,7 @@
             {
               "uniq_id": "fbc6fafdc71243d085ef91fbabb262b5",
               "title": "\"/ Folders!\"",
-              "icon": "folder.png",
+              "icon": "folder",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -212,7 +212,7 @@
             {
               "uniq_id": "9869a2f251114ecca715a9f5dc83bc3f",
               "title": "\"? Find answers to this question\"",
-              "icon": "question.png",
+              "icon": "question",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -221,7 +221,7 @@
             {
               "uniq_id": "df84f276cbab482a81edd24bbcb255f8",
               "title": "\"B Describe a bug\"",
-              "icon": "bug.png",
+              "icon": "bug",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -230,7 +230,7 @@
             {
               "uniq_id": "707ca5efb4734505932160c5053321a1",
               "title": "\"> Right arrow\"",
-              "icon": "arrow_right.png",
+              "icon": "arrow_right",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -239,7 +239,7 @@
             {
               "uniq_id": "dc72ecfdc31c4806bb63932e9cda7bbb",
               "title": "\"* Bullet points\" (View subtree for differenly colored bullets)",
-              "icon": "bullet_black.png",
+              "icon": "bullet_black",
               "checked": false,
               "expanded": false,
               "auto_collapse": true,
@@ -247,7 +247,7 @@
                 {
                   "uniq_id": "27bdf62113a646788a8ab12923ffcd75",
                   "title": "\"* Black bullet\"",
-                  "icon": "bullet_black.png",
+                  "icon": "bullet_black",
                   "checked": false,
                   "expanded": true,
                   "auto_collapse": false,
@@ -256,7 +256,7 @@
                 {
                   "uniq_id": "9dcfc9e784af42e7b6da8b5ed48e8629",
                   "title": "\"*g Green bullet\"",
-                  "icon": "bullet_green.png",
+                  "icon": "bullet_green",
                   "checked": false,
                   "expanded": true,
                   "auto_collapse": false,
@@ -265,7 +265,7 @@
                 {
                   "uniq_id": "621936feebd6400490a3a1c99a88c2d6",
                   "title": "\"*b Blue bullet\"",
-                  "icon": "bullet_blue.png",
+                  "icon": "bullet_blue",
                   "checked": false,
                   "expanded": true,
                   "auto_collapse": false,
@@ -274,7 +274,7 @@
                 {
                   "uniq_id": "c4495f6a94994754ae7da0147ba6f61e",
                   "title": "\"*o Orange bullet\"",
-                  "icon": "bullet_orange.png",
+                  "icon": "bullet_orange",
                   "checked": false,
                   "expanded": true,
                   "auto_collapse": false,
@@ -283,7 +283,7 @@
                 {
                   "uniq_id": "3927f60121f540089b1e961e7fe87e0e",
                   "title": "\"*r Red bullet\"",
-                  "icon": "bullet_red.png",
+                  "icon": "bullet_red",
                   "checked": false,
                   "expanded": true,
                   "auto_collapse": false,
@@ -292,7 +292,7 @@
                 {
                   "uniq_id": "fcd0e729874846e080f2f01b7e7e0dec",
                   "title": "\"*p Purple bullet\"",
-                  "icon": "bullet_purple.png",
+                  "icon": "bullet_purple",
                   "checked": false,
                   "expanded": true,
                   "auto_collapse": false,
@@ -303,7 +303,7 @@
             {
               "uniq_id": "d5c280255f7a4a5ea3bcb0518c7ff9b9",
               "title": "\": For items that are on the clock\"",
-              "icon": "clock.png",
+              "icon": "clock",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -312,7 +312,7 @@
             {
               "uniq_id": "ee805f7d0aaa4a5dbc19b6423e6edbf6",
               "title": "\">< Waiting\"",
-              "icon": "hourglass.png",
+              "icon": "hourglass",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -321,7 +321,7 @@
             {
               "uniq_id": "ad33b56a3eb44875aaa1f967e1c8832f",
               "title": "\"<- Recurring\"",
-              "icon": "recur.png",
+              "icon": "recur",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -330,7 +330,7 @@
             {
               "uniq_id": "aa719bea6b96433db6fe076203f198ff",
               "title": "\".. Progress\"",
-              "icon": "progressbar.png",
+              "icon": "progressbar",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -339,7 +339,7 @@
             {
               "uniq_id": "3a08964b6e7e4bb6bbf95df30ed0aa3e",
               "title": "\"^ Note\"",
-              "icon": "note.png",
+              "icon": "note",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -348,7 +348,7 @@
             {
               "uniq_id": "a19f1c1b5c45436389a6179567a9ba0b",
               "title": "\"!! REALLY careful with this one\"",
-              "icon": "exclamation.png",
+              "icon": "exclamation",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -357,7 +357,7 @@
             {
               "uniq_id": "ce0a1eb85b184646940ae2f408d0ace5",
               "title": "\"[] Checkboxes\"",
-              "icon": "check_box_uncheck.png",
+              "icon": "check_box_uncheck",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -366,7 +366,7 @@
             {
               "uniq_id": "c16acb686cfd48a2884a1748c92e762a",
               "title": "\"db Database\"",
-              "icon": "database.png",
+              "icon": "database",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -375,7 +375,7 @@
             {
               "uniq_id": "1cdbdaf2bd884c65810a4c5a7586f8a0",
               "title": "\"doc Document\"",
-              "icon": "document_editing.png",
+              "icon": "document_editing",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -384,7 +384,7 @@
             {
               "uniq_id": "6c500bacd9e845ef9e979a926f827ba0",
               "title": "\"usr User\"",
-              "icon": "user.png",
+              "icon": "user",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -393,7 +393,7 @@
             {
               "uniq_id": "e8b38bbc09114f2e8d090081e6bfab62",
               "title": "\"ph Phone\"",
-              "icon": "phone.png",
+              "icon": "phone",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -404,7 +404,7 @@
         {
           "uniq_id": "f9eee8a3000742dc9b9e6ee4b1666c92",
           "title": "All items can be marked done, in which case their icon changes to an Checked item",
-          "icon": "information.png",
+          "icon": "information",
           "checked": false,
           "expanded": true,
           "auto_collapse": false,
@@ -412,7 +412,7 @@
             {
               "uniq_id": "1cef0084633643df9b10bcfc31ff4b0b",
               "title": "Fold the laundry",
-              "icon": "check_box_uncheck.png",
+              "icon": "check_box_uncheck",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -421,7 +421,7 @@
             {
               "uniq_id": "34b28adc7f6b4b4a87f49396493d3b50",
               "title": "Mow the lawn",
-              "icon": "check_box_uncheck.png",
+              "icon": "check_box_uncheck",
               "checked": true,
               "expanded": true,
               "auto_collapse": false,
@@ -430,7 +430,7 @@
             {
               "uniq_id": "c6cc332af20e434982332b593197a628",
               "title": "Feed the anteater",
-              "icon": "check_box_uncheck.png",
+              "icon": "check_box_uncheck",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -443,7 +443,7 @@
     {
       "uniq_id": "e6efc45e24bf45e188381f9a390c25d3",
       "title": "Todos",
-      "icon": "folder.png",
+      "icon": "folder",
       "checked": false,
       "expanded": true,
       "auto_collapse": false,
@@ -451,7 +451,7 @@
         {
           "uniq_id": "b33f8d29541845f2800b7971b835ae77",
           "title": "Now",
-          "icon": "folder.png",
+          "icon": "folder",
           "checked": false,
           "expanded": true,
           "auto_collapse": false,
@@ -459,7 +459,7 @@
             {
               "uniq_id": "b114557436e54b30aefb3e70ea1e7f7f",
               "title": "Call plumber",
-              "icon": "exclamation.png",
+              "icon": "exclamation",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -468,7 +468,7 @@
             {
               "uniq_id": "0556bd06b58a46038b3d8ccaeff69f1c",
               "title": "Contact that jackass John about clogging up the toilet.",
-              "icon": "user.png",
+              "icon": "user",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
@@ -479,7 +479,7 @@
         {
           "uniq_id": "2fa5f92759fd4a65b9fd5f2f2bd36fad",
           "title": "Later",
-          "icon": "folder.png",
+          "icon": "folder",
           "checked": false,
           "expanded": true,
           "auto_collapse": true,
@@ -487,7 +487,7 @@
             {
               "uniq_id": "02ea8ab55a884cd4971b79e0a09efc88",
               "title": "Buy bread",
-              "icon": "check_box_uncheck.png",
+              "icon": "check_box_uncheck",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
