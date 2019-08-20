@@ -1,5 +1,5 @@
 {
-  "cursor": "e8b38bbc09114f2e8d090081e6bfab62",
+  "cursor": "c16acb686cfd48a2884a1748c92e762a",
   "marks": {},
   "nodes": [
     {
@@ -237,6 +237,24 @@
               "children": []
             },
             {
+              "uniq_id": "b15126a10c9f4892aa5091fceb190f55",
+              "title": "\"< \" Left arrow",
+              "icon": "arrow_left",
+              "checked": false,
+              "expanded": true,
+              "auto_collapse": false,
+              "children": []
+            },
+            {
+              "uniq_id": "ad33b56a3eb44875aaa1f967e1c8832f",
+              "title": "\"<- Recurring\"",
+              "icon": "recur",
+              "checked": false,
+              "expanded": true,
+              "auto_collapse": false,
+              "children": []
+            },
+            {
               "uniq_id": "dc72ecfdc31c4806bb63932e9cda7bbb",
               "title": "\"* Bullet points\" (View subtree for differenly colored bullets)",
               "icon": "bullet_black",
@@ -313,15 +331,6 @@
               "uniq_id": "ee805f7d0aaa4a5dbc19b6423e6edbf6",
               "title": "\">< Waiting\"",
               "icon": "hourglass",
-              "checked": false,
-              "expanded": true,
-              "auto_collapse": false,
-              "children": []
-            },
-            {
-              "uniq_id": "ad33b56a3eb44875aaa1f967e1c8832f",
-              "title": "\"<- Recurring\"",
-              "icon": "recur",
               "checked": false,
               "expanded": true,
               "auto_collapse": false,
