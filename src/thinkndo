@@ -81,6 +81,7 @@ quick_icon_map = {
     "? ": "question",
     "B ": "bug",
     "> ": "arrow_right",
+    "< ": "arrow_left",
     "* ": "bullet_black",
     "*g ": "bullet_green",
     "*b ": "bullet_blue",
