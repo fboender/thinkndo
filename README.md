@@ -26,18 +26,18 @@ Thinkndo uses Vi-like keybindings:
 * `/`: Search
 * `n`: Jump to next search match
 * `m[a-zA-Z]`: Set mark
-* ``[a-zA-Z]`: Jump to mark
+* `[a-zA-Z]`: Jump to mark
 
 ### Tree manipulation
 
 * `a`: Edit item
 * `d`: Delete item
-* `o`: Insert item above
+* `shift+o`: Insert item above
 * `o`: Insert item below
 * `p`: Paste (deleted) entry below
-* `shift-p`: Paste (deleted) entry above
-* `ctrl-shift-p`: Paste (deleted) entry as children of current item
-* `shift-v`: Start visual mode. Grow the selection using `h`, `j`, `k`, `l`.
+* `shift+p`: Paste (deleted) entry above
+* `ctrl+shift+p`: Paste (deleted) entry as children of current item
+* `shift+v`: Start visual mode. Grow the selection using `h`, `j`, `k`, `l`.
   You can then use `d` to delete the selection and `x` to mark them done.
 * `c`: Toggle expanded item
 * `shift+c`: Toggle auto-close of subtree
