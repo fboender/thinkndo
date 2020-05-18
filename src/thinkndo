@@ -48,9 +48,11 @@ keypress_items = [
     {"key": Qt.Key_D, "action": "delete"},
     {"key": Qt.Key_E, "action": "export"},
     {"key": Qt.Key_H, "action": "cursor_left"},
+    {"key": Qt.Key_N, "action": "move_down_sibling", "modifiers": int(Qt.ShiftModifier | Qt.ControlModifier)},
     {"key": Qt.Key_J, "action": "move_down_group", "modifiers": int(Qt.ShiftModifier | Qt.ControlModifier)},
     {"key": Qt.Key_J, "action": "move_down", "modifiers": int(Qt.ShiftModifier)},
     {"key": Qt.Key_J, "action": "cursor_down"},
+    {"key": Qt.Key_P, "action": "move_up_sibling", "modifiers": int(Qt.ShiftModifier | Qt.ControlModifier)},
     {"key": Qt.Key_K, "action": "move_up_group", "modifiers": int(Qt.ShiftModifier | Qt.ControlModifier)},
     {"key": Qt.Key_K, "action": "move_up", "modifiers": int(Qt.ShiftModifier)},
     {"key": Qt.Key_K, "action": "cursor_up"},
@@ -760,6 +762,45 @@ class GUI:
         self.node_view.setCurrentIndex(new_index)
         cur_index = self.node_view.currentIndex()
         cur_item = self.node_model.itemFromIndex(cur_index)
+
+    def _act_move_up_sibling(self):
+        """
+        Move the current item up to the previous sibling tree.
+        """
+        cur = self.get()
+        children = self.serialize(cur["item"])
+        parent_index = cur["index"].parent()
+        prev_sibling_row = parent_index.row() - 1
+
+        if prev_sibling_row < 0:
+            # Can't move further up
+            return
+
+        # Remove current row and insert in tree above
+        self.node_model.removeRows(cur["row"], 1, parent_index)
+        target = self.get(parent_index.siblingAtRow(prev_sibling_row))
+        new_item = self.insert_node(cur["node"], target["item"], 0)
+
+    def _act_move_down_sibling(self):
+        """
+        Move the current item down to the next sibling tree.
+        """
+        cur = self.get()
+        children = self.serialize(cur["item"])
+        parent_index = cur["index"].parent()
+        grand_parent_index = cur["index"].parent().parent()
+        grand_parent = self.get(grand_parent_index)
+        next_sibling_row = parent_index.row() + 1
+
+        if next_sibling_row == grand_parent["item"].rowCount():
+            # Can't move further down
+            return
+
+        # Remove current row and insert in tree below
+        self.node_model.removeRows(cur["row"], 1, parent_index)
+        target = self.get(parent_index.siblingAtRow(next_sibling_row))
+        new_item = self.insert_node(cur["node"], target["item"], 0)
+
 
     def _act_move_up_group(self):
         """

@@ -37,16 +37,15 @@ Thinkndo uses Vi-like keybindings:
 * `p`: Paste (deleted) entry below
 * `shift+p`: Paste (deleted) entry above
 * `ctrl+shift+p`: Paste (deleted) entry as children of current item
-* `shift+v`: Start visual mode. Grow the selection using `h`, `j`, `k`, `l`.
-  You can then use `d` to delete the selection and `x` to mark them done.
+* `shift+v`: Start visual mode. Grow the selection using `h`, `j`, `k`, `l`.  You can then use `d` to delete the selection and `x` to mark them done.
 * `c`: Toggle expanded item
 * `shift+c`: Toggle auto-close of subtree
 * `shift+j`: Move item down
 * `shift+k`: Move item up
-* `control+shift+j`: Move item down to next item with same checked status or
-  icon.
-* `control+shift+k`: Move item up to next item with same checked status or
-  icon.
+* `control+shift+j`: Move item down to next item with same checked status or icon.
+* `control+shift+k`: Move item up to next item with same checked status or icon.
+* `control+shift+p`: Move item to the tree above
+* `control+shift+n`: Move item to the tree below
 
 ### Other
 
