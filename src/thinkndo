@@ -76,6 +76,7 @@ keypress_items = [
 ]
 
 quick_icon_map = {
+    "a ": "answer",
     "i ": "information",
     "! ": "warning",
     "+ ": "plus",
