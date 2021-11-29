@@ -102,6 +102,7 @@ quick_icon_map = {
     "doc ": "document_editing",
     "usr ": "user",
     "ph ": "phone",
+    "// ": "link",
 }
 
 MODE_NORMAL = 0
