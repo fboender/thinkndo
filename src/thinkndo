@@ -73,6 +73,7 @@ keypress_items = [
     {"key": Qt.Key_Escape, "action": "escape"},
     {"key": Qt.Key_Slash, "action": "search"},
     {"key": Qt.Key_Space, "action": "select"},
+    {"key": Qt.Key_Return, "action": "activate"},
 ]
 
 quick_icon_map = {
@@ -136,12 +137,13 @@ class Node:
     Nodes represent a single leaf in the outline tree.
     """
     def __init__(self, title, icon=None, checked=False, expanded=False,
-                 auto_collapse=False, uniq_id=None):
+                 auto_collapse=False, activate="", uniq_id=None):
         self.title = title
         self.icon = icon
         self.checked = checked
         self.expanded = expanded
         self.auto_collapse = auto_collapse
+        self.activate = activate
         if uniq_id is not None:
             self.uniq_id = uniq_id
         else:
@@ -178,6 +180,7 @@ class Node:
             checked=d.get("checked", False),
             expanded=d.get("expanded", True),
             auto_collapse=d.get("auto_collapse", False),
+            activate=d.get("activate", ""),
             uniq_id=d.get("uniq_id", None),
         )
 
@@ -193,6 +196,7 @@ class Node:
             "icon": self.icon,
             "checked": self.checked,
             "expanded": self.expanded,
+            "activate": self.activate,
             "auto_collapse": self.auto_collapse,
         }
 
@@ -683,6 +687,12 @@ class GUI:
     def _act_edit(self):
         cur = self.get()
         self.node_view.edit(cur["index"])
+
+    def _act_activate(self):
+        cur = self.get()
+        activate = cur["node"].activate
+        if activate:
+            os.system(activate)
 
     def _act_escape(self):
         """
