@@ -49,6 +49,7 @@ Thinkndo uses Vi-like keybindings:
 
 ### Other
 
+* `ctrl-O`: Open current item in browser (must be a URL)
 * `q`: Close program
 * `x`: Toggle done
 * `Escape`: Close program

@@ -10,6 +10,7 @@ import logging
 import copy
 import uuid
 import string
+import webbrowser
 from pathlib import Path
 from PyQt5.Qt import *
 from PyQt5 import QtCore
@@ -59,6 +60,7 @@ keypress_items = [
     {"key": Qt.Key_L, "action": "cursor_right"},
     {"key": Qt.Key_N, "action": "search_next"},
     {"key": Qt.Key_M, "action": "mark_set"},
+    {"key": Qt.Key_O, "action": "open_in_browser", "modifiers": int(Qt.ControlModifier)},
     {"key": Qt.Key_O, "action": "insert_above", "modifiers": int(Qt.ShiftModifier)},
     {"key": Qt.Key_O, "action": "insert_below"},
     {"key": Qt.Key_P, "action": "paste_into", "modifiers": int(Qt.ShiftModifier | Qt.ControlModifier)},
@@ -719,6 +721,12 @@ class GUI:
         with open("todo.html", "w") as fh:
             fh.write(html_head.format(icons="\n".join(icons)))
             self.save_html(fh, node_dicts)
+
+    def _act_open_in_browser(self):
+        cur = self.get()
+        title = cur["node"].title
+        webbrowser.open(title)
+        self.close()
 
     def _act_insert_above(self):
         cur = self.get()
