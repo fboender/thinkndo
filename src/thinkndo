@@ -731,13 +731,9 @@ class GUI:
     def _act_insert_above(self):
         cur = self.get()
         cur_row = cur["index"].row()
-        if cur_row > 0:
-            prev = self.get(cur["index"].siblingAtRow(cur_row - 1))
-        else:
-            prev = self.get(cur["index"].siblingAtRow(0))
 
         # Create new node and insert
-        new_node = prev["node"].copy()
+        new_node = cur["node"].copy()
         new_node.title = ""
         new_item = self.insert_node(new_node, cur["parent_item"], cur["row"])
         new_index = self.node_model.indexFromItem(new_item)
