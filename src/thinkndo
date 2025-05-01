@@ -106,6 +106,7 @@ quick_icon_map = {
     "usr ": "user",
     "ph ": "phone",
     "// ": "link",
+    "c ": "chat",
 }
 
 MODE_NORMAL = 0
